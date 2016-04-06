@@ -1,7 +1,7 @@
 package ce325.hw1;
 public class SeamCarver{
 
-	//Deez are da methods we have to implement 
+	//Deez iz da methods we have to implement 
 	public SeamCarver(java.awt.image.BufferedImage image){};
 	public SeamCarver(java.io.File file){};
 	public SeamCarver(java.net.URL url){};
