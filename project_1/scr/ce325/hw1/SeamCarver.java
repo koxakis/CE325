@@ -1,3 +1,4 @@
+package ce325.hw1.SeamCarver;
 public class SeamCarver{
 
 	public SeamCarver(java.awt.image.BufferedImage image){};
