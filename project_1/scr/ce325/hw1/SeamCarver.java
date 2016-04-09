@@ -9,15 +9,15 @@ public class SeamCarver {
 
 	//Constractors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image) throws IOException{
-
+		//Take BufferedImage and create RGB and energy tables 
 	};
 	public SeamCarver(java.io.File file) throws IOException{
-
+		//Convert File->BufferedImage and call said Constractor with this
 		System.out.println("Hello from File");
 	};
 
 	public SeamCarver(java.net.URL url) throws IOException{
-
+		//Convert url->BufferedImage and call said Constractor with this
 		System.out.println("Hello from URL");
 	};
 
