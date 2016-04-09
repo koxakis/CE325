@@ -2,7 +2,7 @@ package ce325.hw1;
 
 public class SeamCarver implements SeamCarverInterface{
 
-
+	//Constractors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image){};
 	public SeamCarver(java.io.File file){};
 	public SeamCarver(java.net.URL url){};
