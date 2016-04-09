@@ -9,7 +9,7 @@ public class SeamCarver {
 
 	//Constractors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image) throws IOException{
-		//Take BufferedImage and create RGB and energy tables 
+		//Take BufferedImage and create RGB and energy tables
 	};
 	public SeamCarver(java.io.File file) throws IOException{
 		//Convert File->BufferedImage and call said Constractor with this
@@ -55,20 +55,6 @@ public class SeamCarver {
 				//Loop for user input
 			}
 		}
-
-		/*try{
-
-
-			if ( isFile ){
-				SeamCarver usrImage = new SeamCarver(userFileInput);
-			}else{
-				SeamCarver usrImage = new SeamCarver(userURLInput);
-			}
-		}catch(IOException ex){
-
-            System.out.println(ex.toString());
-
-		}*/
 
 	}
 }
