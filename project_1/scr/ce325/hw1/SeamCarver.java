@@ -1,10 +1,12 @@
 package ce325.hw1;
-public class SeamCarver{
 
-	//Deez iz da methods we haz to implement!!! 
+public class SeamCarver implements SeamCarverInterface{
+
+
 	public SeamCarver(java.awt.image.BufferedImage image){};
 	public SeamCarver(java.io.File file){};
 	public SeamCarver(java.net.URL url){};
+
 	public double energy(int row, int col){
 		return 0;
 	};  // energy of a pixel
