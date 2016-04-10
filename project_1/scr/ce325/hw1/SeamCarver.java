@@ -92,9 +92,11 @@ public class SeamCarver {
 
 		if( ((int) ( width/ratio )) < height ) {
 			optimalWidth = (int) (ratio * height);
+			System.out.println("New resolution is :" + optimalWidth " " + height);
 			this.scale(optimalWidth,height);
 		} else {
 			optimalHeight = (int) ( width/ratio );
+			System.out.println("New resolution is :" + width " " + optimalHeight);
 			this.scale(width,optimalHeight);
 		}
 
