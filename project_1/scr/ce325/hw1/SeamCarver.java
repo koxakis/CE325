@@ -1,8 +1,10 @@
 package ce325.hw1;
 
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
 import javax.annotation.*;
@@ -32,7 +34,6 @@ public class SeamCarver {
 		Graphics2D temp = newInput.createGraphics();
 		temp.drawImage(input, 0, 0, null);
 		temp.dispose();
-		//System.out.println("Hello from File " + input.getType() + " " + newInput.getType() );
 	};
 
 	public SeamCarver(java.net.URL url) throws IOException{
@@ -45,11 +46,6 @@ public class SeamCarver {
 		temp.drawImage(input, 0, 0, null);
 		temp.dispose();
 
-		//Oputputs a buffered image to a file Use for final output
-		/*File outputFile = new File("saved.png");
-		ImageIO.write(newInput, "png", outputFile); */
-
-		//System.out.println("Hello from URL " + input.getType() + " " + newInput.getType());
 	};
 
 	// energy of a pixel
@@ -79,6 +75,22 @@ public class SeamCarver {
 	dimensions before applying
 	SeamCarve algorithm */
 	private void scale(int width, int height){
+		BufferedImage oldImage = newInput;
+		newInput = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+		Graphics2D temp = newInput.createGraphics();
+		temp.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		temp.drawImage(oldImage, 0, 0, width, height,null);
+		temp.dispose();
+
+		//Oputputs a buffered image to a file Use for final output
+		try{
+			File outputFile = new File("saved.png");
+			ImageIO.write(newInput, "png", outputFile);
+		} catch(IOException e) {
+
+		}
+
 
 	};
 
@@ -88,15 +100,16 @@ public class SeamCarver {
 		double ratio;
 		int optimalWidth, optimalHeight;
 
-		ratio = newInput.getWidth() / newInput.getHeight();
+		ratio = (double) newInput.getWidth() / (double) newInput.getHeight();
+		//System.out.println("The ratio is: " + ratio);
 
 		if( ((int) ( width/ratio )) < height ) {
 			optimalWidth = (int) (ratio * height);
-			System.out.println("New resolution is :" + optimalWidth " " + height);
+			System.out.println("\nScaling down to " + optimalWidth + "x" + height + " for optimal resaults");
 			this.scale(optimalWidth,height);
 		} else {
 			optimalHeight = (int) ( width/ratio );
-			System.out.println("New resolution is :" + width " " + optimalHeight);
+			System.out.println("\nScaling down to " + width + "x" + optimalHeight + " for optimal resaults");
 			this.scale(width,optimalHeight);
 		}
 
@@ -107,11 +120,13 @@ public class SeamCarver {
 		boolean flag = true;
 		int newWidth, newHeight;
 		SeamCarver userImage = null;
-
-		System.out.print("Welcome to Image Resizer 3000 \n");
+		File targetFile;
 
 		Scanner userInput = new Scanner(System.in);
 		String path = new String();
+
+		System.out.print("Welcome to Image Resizer 3000 \n");
+
 		try{
 			path = args[0];
 		}catch(ArrayIndexOutOfBoundsException e){
@@ -141,7 +156,7 @@ public class SeamCarver {
 		}//While flag end
 
 		System.out.println("The image you imported is: " + newInput.getWidth() + "x" + newInput.getHeight());
-		System.out.print("Enter resizing dimensions\nEnter width: ");
+		System.out.print("\nEnter resizing dimensions\nEnter width: ");
 		newWidth = userInput.nextInt();
 
 		while(newWidth <= 0){
@@ -157,8 +172,21 @@ public class SeamCarver {
 			newHeight = userInput.nextInt();
 		}
 
-		//SeamCarver.findScale(newWidth, newHeight);
-		userImage.seamCarve(newWidth, newHeight);
+		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
+		path = userInput.next();
+
+		while (!path.toLowerCase().endsWith(".png")) {
+			System.out.print("\nFile name entered is not a *.png\nPlease enter new file name: ");
+			path = userInput.next();
+		}
+
+		targetFile = new File(path);
+
+		if ( targetFile.exists() ){
+			System.out.println("\nFile name " + targetFile.getName() + " already exists");
+		}else{
+			userImage.seamCarve(newWidth, newHeight);
+		}
 
 	}//Main end
 }//Class end
