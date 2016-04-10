@@ -12,11 +12,13 @@ public class SeamCarver {
 		//Take BufferedImage and create RGB and energy tables
 	};
 	public SeamCarver(java.io.File file) throws IOException{
+		//Use file io to open the image
 		//Convert File->BufferedImage and call said Constractor with this
 		System.out.println("Hello from File");
 	};
 
 	public SeamCarver(java.net.URL url) throws IOException{
+		//Download image from site
 		//Convert url->BufferedImage and call said Constractor with this
 		System.out.println("Hello from URL");
 	};
