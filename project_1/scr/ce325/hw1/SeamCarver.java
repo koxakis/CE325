@@ -1,10 +1,11 @@
 package ce325.hw1;
 
-import javax.annotation.*;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
+import javax.annotation.*;
 import javax.imageio.ImageIO;
 
 public class SeamCarver {
@@ -68,20 +69,37 @@ public class SeamCarver {
 
 	public static void main(String[] args) {
 
-		try{
+		boolean flag = true;
 
-			java.net.URL userInput = new java.net.URL(args[0]);
-			SeamCarver userImage = new SeamCarver(userInput);
-		}catch(Exception ex){
-			//ex.printStackTrace();
-			System.out.println(ex.getMessage());
-			try{
-				java.io.File userInput = new java.io.File(args[0]);
+		System.out.print("Welcome to Image Resizer 3000 \n");
+
+		Scanner errorInput = new Scanner(System.in);
+		String path = new String();
+		try{
+			path = args[0];
+		}catch(ArrayIndexOutOfBoundsException e){
+			System.out.print("Please enter a valid path or URL: ");
+			path = errorInput.next();
+		}
+		while(flag){
+			try {
+				java.net.URL userInput = new java.net.URL(path);
 				SeamCarver userImage = new SeamCarver(userInput);
-			}catch(Exception ex2){
-				ex2.printStackTrace();
-				System.out.println("No valid input given");
-				//Loop for user input
+				flag = false;
+			} catch(Exception ex) {
+				//ex.printStackTrace();
+				System.out.println("\nNo URL detected scanning for file (" + ex.getMessage() + ")" );
+				try {
+					java.io.File userInput = new java.io.File(path);
+					SeamCarver userImage = new SeamCarver(userInput);
+					flag = false;
+				} catch(Exception ex2) {
+					//ex2.printStackTrace();
+					System.out.println("No file detected (" + ex2.getMessage() + ")" + "\n");
+					System.out.print("Couln't retrieve an image from either source\nPlease provide new path to an image: ");
+					path = errorInput.next();
+					//Loop for user input
+				}
 			}
 		}
 
