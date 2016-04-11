@@ -56,7 +56,7 @@ public class SeamCarver {
 	public double energy(int row, int col){
 
 		int posN, posS, posE, posW;
-		double energyX, energyY;
+		double energyX, energyY, energyOverall;
 
 		posW = (row*newInput.getWidth()) + ( ( (col + newInput.getWidth() ) - 1) % newInput.getWidth());
 		posE = (row*newInput.getWidth()) + ( (col + 1) % newInput.getWidth() );
@@ -68,6 +68,7 @@ public class SeamCarver {
 		System.out.println("Rs: " + ((pixelMap[posS] >> 16) & 0xFF) + " Gs: " + ((pixelMap[posS] >> 8) & 0xFF) + " Bs: " + ((pixelMap[posS] >> 0) & 0xFF));
 		System.out.println("Rw: " + ((pixelMap[posW] >> 16) & 0xFF) + " Gw: " + ((pixelMap[posW] >> 8) & 0xFF) + " Bw: " + ((pixelMap[posW] >> 0) & 0xFF));
 		System.out.println("Re: " + ((pixelMap[posE] >> 16) & 0xFF) + " Ge: " + ((pixelMap[posE] >> 8) & 0xFF) + " Be: " + ((pixelMap[posE] >> 0) & 0xFF));
+
 		//E​x(i,j) = [R(i,j+1) - R(i,j-­1)]^2​+ [G(i,j+1) ­- G(i,j-­1)]^2​ + [B(i,j+1) ­- B(i,j­-1)]^2​
 		energyX = Math.pow( ((pixelMap[posW] >> 16) & 0xFF) - ((pixelMap[posE] >> 16) & 0xFF), 2 ) +
 					Math.pow( ((pixelMap[posW] >> 8) & 0xFF) - ((pixelMap[posE] >> 8) & 0xFF), 2 ) +
@@ -78,8 +79,9 @@ public class SeamCarver {
 					Math.pow( ((pixelMap[posS] >> 8) & 0xFF) - ((pixelMap[posN] >> 8) & 0xFF), 2 ) +
 					Math.pow( ((pixelMap[posS] >> 0) & 0xFF) - ((pixelMap[posN] >> 0) & 0xFF), 2 );
 
+		energyOverall = energyX + energyY;
 
-		return energyX + energyY;
+		return energyOverall;
 	};
 
 	// return horizontal seam
