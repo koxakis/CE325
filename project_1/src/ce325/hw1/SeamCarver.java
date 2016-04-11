@@ -69,12 +69,12 @@ public class SeamCarver {
 		System.out.println("Rw: " + ((pixelMap[posW] >> 16) & 0xFF) + " Gw: " + ((pixelMap[posW] >> 8) & 0xFF) + " Bw: " + ((pixelMap[posW] >> 0) & 0xFF));
 		System.out.println("Re: " + ((pixelMap[posE] >> 16) & 0xFF) + " Ge: " + ((pixelMap[posE] >> 8) & 0xFF) + " Be: " + ((pixelMap[posE] >> 0) & 0xFF));
 		//E​x(i,j) = [R(i,j+1) - R(i,j-­1)]^2​+ [G(i,j+1) ­- G(i,j-­1)]^2​ + [B(i,j+1) ­- B(i,j­-1)]^2​
-		energyX = (double) Math.pow( ((pixelMap[posE] >> 16) & 0xFF) - ((pixelMap[posW] >> 16) & 0xFF), 2 ) +
-					Math.pow( ((pixelMap[posE] >> 8) & 0xFF) - ((pixelMap[posW] >> 8) & 0xFF), 2 ) +
-					Math.pow( ((pixelMap[posE] >> 0) & 0xFF) - ((pixelMap[posW] >> 0) & 0xFF), 2 );
+		energyX = Math.pow( ((pixelMap[posW] >> 16) & 0xFF) - ((pixelMap[posE] >> 16) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posW] >> 8) & 0xFF) - ((pixelMap[posE] >> 8) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posW] >> 0) & 0xFF) - ((pixelMap[posE] >> 0) & 0xFF), 2 );
 
 		//E​y(i,j) = [R(i+1,j) - R(i-1,j)]^2​+ [G(i+1,j) - G(i-1,j)]^2​ + [B(i+1,j) - B(i-1,j)]^2​
-		energyY = (double) Math.pow( ((pixelMap[posS] >> 16) & 0xFF) - ((pixelMap[posN] >> 16) & 0xFF), 2 ) +
+		energyY = Math.pow( ((pixelMap[posS] >> 16) & 0xFF) - ((pixelMap[posN] >> 16) & 0xFF), 2 ) +
 					Math.pow( ((pixelMap[posS] >> 8) & 0xFF) - ((pixelMap[posN] >> 8) & 0xFF), 2 ) +
 					Math.pow( ((pixelMap[posS] >> 0) & 0xFF) - ((pixelMap[posN] >> 0) & 0xFF), 2 );
 
