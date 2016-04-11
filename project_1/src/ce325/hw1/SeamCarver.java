@@ -89,6 +89,8 @@ public class SeamCarver {
 							" " + Math.pow( ((pixelMap[posS] >> 0) & 0xFF) - ((pixelMap[posN] >> 0) & 0xFF), 2 ) +
 							" energyY " + energyY);
 
+		System.out.println("\n" + ( ( (pixelMap[posS] >> 0) & 0xFF) - ((pixelMap[posN] >> 0) & 0xFF)));
+
 		energyOverall = energyX + energyY;
 
 		System.out.println("|Energy overal " + energyOverall + " | ");
