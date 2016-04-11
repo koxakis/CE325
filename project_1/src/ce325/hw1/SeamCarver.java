@@ -63,7 +63,7 @@ public class SeamCarver {
 		posN = ( ( ( (row + newInput.getHeight() ) - 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
 		posS = ( ( (row + 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
 
-		//System.out.println("\nNorth position " + posN + " South position " + posS + " West position " + posW + " East position " + posE);
+		System.out.println("\nNorth position " + posN + " South position " + posS + " West position " + posW + " East position " + posE);
 		//E​x(i,j) = [R(i,j+1) - R(i,j-­1)]^2​+ [G(i,j+1) ­- G(i,j-­1)]^2​ + [B(i,j+1) ­- B(i,j­-1)]^2​
 		energyX = Math.pow( ((pixelMap[posE] >> 16) & 0xFF) - ((pixelMap[posW] >> 16) & 0xFF), 2 ) +
 					Math.pow( ((pixelMap[posE] >> 8) & 0xFF) - ((pixelMap[posW] >> 8) & 0xFF), 2 ) +
