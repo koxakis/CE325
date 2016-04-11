@@ -3,6 +3,9 @@ package ce325.hw1;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.awt.image.*;
+import java.awt.*;
 import java.io.*;
 import java.io.IOException;
 import java.net.*;
@@ -13,7 +16,8 @@ import javax.imageio.ImageIO;
 public class SeamCarver {
 
 	public static BufferedImage newInput;
-	public int[][] image;
+	public int[] pixelMap;
+	public double[][] energyMap;
 
 	//Constractors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image) throws IOException{
@@ -50,7 +54,28 @@ public class SeamCarver {
 
 	// energy of a pixel
 	public double energy(int row, int col){
-		return 0;
+
+		int posN, posS, posE, posW;
+		double energyX, energyY;
+
+		posW = (row*newInput.getWidth()) + ( ( (col + newInput.getWidth() ) - 1) % newInput.getWidth());
+		posE = (row*newInput.getWidth()) + ( (col + 1) % newInput.getWidth() );
+		posN = ( ( ( (row + newInput.getHeight() ) - 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
+		posS = ( ( (row + 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
+
+		//System.out.println("\nNorth position " + posN + " South position " + posS + " West position " + posW + " East position " + posE);
+		//E​x(i,j) = [R(i,j+1) - R(i,j-­1)]^2​+ [G(i,j+1) ­- G(i,j-­1)]^2​ + [B(i,j+1) ­- B(i,j­-1)]^2​
+		energyX = Math.pow( ((pixelMap[posE] >> 16) & 0xFF) - ((pixelMap[posW] >> 16) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posE] >> 8) & 0xFF) - ((pixelMap[posW] >> 8) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posE] >> 0) & 0xFF) - ((pixelMap[posW] >> 0) & 0xFF), 2 );
+
+		//E​y(i,j) = [R(i+1,j) - R(i-1,j)]^2​+ [G(i+1,j) - G(i-1,j)]^2​ + [B(i+1,j) - B(i-1,j)]^2​
+		energyY = Math.pow( ((pixelMap[posS] >> 16) & 0xFF) - ((pixelMap[posN] >> 16) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posS] >> 8) & 0xFF) - ((pixelMap[posN] >> 8) & 0xFF), 2 ) +
+					Math.pow( ((pixelMap[posS] >> 0) & 0xFF) - ((pixelMap[posN] >> 0) & 0xFF), 2 );
+
+
+		return energyX + energyY;
 	};
 
 	// return horizontal seam
@@ -100,6 +125,8 @@ public class SeamCarver {
 		double ratio;
 		int optimalWidth, optimalHeight;
 
+		energyMap = new double[newInput.getWidth()][newInput.getHeight()];
+
 		ratio = (double) newInput.getWidth() / (double) newInput.getHeight();
 		//System.out.println("The ratio is: " + ratio);
 
@@ -111,6 +138,19 @@ public class SeamCarver {
 			optimalHeight = (int) ( width/ratio );
 			System.out.println("\nScaling down to " + width + "x" + optimalHeight + " for optimal resaults");
 			this.scale(width,optimalHeight);
+		}
+
+		pixelMap = ((DataBufferInt)newInput.getRaster().getDataBuffer()).getData();
+
+		/*for(int i=0; i < newInput.getWidth()*newInput.getHeight(); i++) {
+			System.out.println(pixelMap[i]);
+		}*/
+
+		for (int i=0; i < newInput.getHeight(); i++){
+			for (int j=0; j < newInput.getWidth(); j++){
+				energyMap[i][j] = this.energy(i,j);
+				System.out.println(energyMap[i][j]);
+			}
 		}
 
 	};
