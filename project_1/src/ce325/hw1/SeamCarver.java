@@ -142,9 +142,9 @@ public class SeamCarver {
 
 		pixelMap = ((DataBufferInt)newInput.getRaster().getDataBuffer()).getData();
 
-		/*for(int i=0; i < newInput.getWidth()*newInput.getHeight(); i++) {
-			System.out.println(pixelMap[i]);
-		}*/
+		for(int i=0; i < newInput.getWidth()*newInput.getHeight(); i++) {
+			System.out.println("R: " + ((pixelMap[i] >> 16) & 0xFF) + " G: " + ((pixelMap[i] >> 8) & 0xFF) + " B: " + ((pixelMap[i] >> 0) & 0xFF));
+		}
 
 		for (int i=0; i < newInput.getHeight(); i++){
 			for (int j=0; j < newInput.getWidth(); j++){
