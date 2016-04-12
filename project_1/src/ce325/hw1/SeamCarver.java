@@ -12,6 +12,7 @@ import java.net.*;
 import java.util.Scanner;
 import javax.annotation.*;
 import javax.imageio.ImageIO;
+import java.util.Arrays;
 
 public class SeamCarver {
 
@@ -199,14 +200,14 @@ public class SeamCarver {
 
 			if (newInput.getWidth() > width){
 				seam = this.findVerticalSeam();
-				System.out.println("Seam " + seam);
+				System.out.println("Seam " + Arrays.toString(seam));
 				//this.removeVerticalSeam(seam);
-				currDimension = newInput.getWidth();
+				//currDimension = newInput.getWidth();
 			} else {
 				seam = this.findHorizontalSeam();
 				System.out.println("Seam " + seam);
 				//this.removeHorizontalSeam(seam);
-				currDimension = newInput.getHeight();
+				//currDimension = newInput.getHeight();
 			}
 			currDimension--;
 
