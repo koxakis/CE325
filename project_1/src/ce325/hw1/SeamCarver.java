@@ -80,14 +80,51 @@ public class SeamCarver {
 
 	// return horizontal seam
 	public int[] findHorizontalSeam(){
-		int a[]={0};
-		return a;
+		int[] seam = null;
+		int i, j;
+		double minEnergy;
+
+		minEnergy = energyMap[0][0];
+		seam[0] = 0;
+		for( i=1; i<newInput.getHeight() ; i++){
+			if (energyMap[i][0] < minEnergy) {
+				minEnergy = energyMap[i][0];
+				seam[0] = i;
+			}
+		}
+
+		return seam;
 	};
 
 	// return vertical seam
 	public int[] findVerticalSeam(){
-		int a[]={0};
-		return a;
+		int[] seam = new int[newInput.getHeight()];
+		int i, j;
+		double minEnergy;
+
+		minEnergy = energyMap[0][0];
+		seam[0] = 0;
+		for( j=1; j<newInput.getWidth() ; j++){
+			if (energyMap[0][j] < minEnergy) {
+				minEnergy = energyMap[0][j];
+				seam[0] = j;
+			}
+		}
+
+		for( i=1; i<newInput.getHeight(); i++){
+			minEnergy = energyMap[i][(seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth()];
+			seam[i] = (seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth();
+			j=seam[i-1];
+			while(j != (seam[i-1] + 1) % newInput.getWidth()){
+				if (energyMap[i][j] < minEnergy) {
+					minEnergy = energyMap[i][j];
+					seam[0] = j;
+				}
+				j = (j + 1) % newInput.getWidth();
+			}
+		}
+
+		return seam;
 	};
 
 	// remove the seam
@@ -124,6 +161,8 @@ public class SeamCarver {
 	public void seamCarve(int width, int height){
 		double ratio;
 		int optimalWidth, optimalHeight;
+		int cuttingDimension, currDimension;
+		int[] seam;
 
 		energyMap = new double[newInput.getWidth()][newInput.getHeight()];
 
@@ -140,14 +179,39 @@ public class SeamCarver {
 			this.scale(width,optimalHeight);
 		}
 
-		pixelMap = ((DataBufferInt)newInput.getRaster().getDataBuffer()).getData();
-
-		for (int i=0; i < newInput.getHeight(); i++){
-			for (int j=0; j < newInput.getWidth(); j++){
-				energyMap[i][j] = this.energy(i,j);
-				System.out.println(energyMap[i][j]);
-			}
+		if (newInput.getWidth() > width){
+			cuttingDimension = width;
+			currDimension = newInput.getWidth();
+		} else {
+			cuttingDimension = height;
+			currDimension = newInput.getHeight();
 		}
+
+		while ( currDimension > cuttingDimension ) {
+			pixelMap = ((DataBufferInt)newInput.getRaster().getDataBuffer()).getData();
+
+			for (int i=0; i < newInput.getHeight(); i++){
+				for (int j=0; j < newInput.getWidth(); j++){
+					energyMap[i][j] = this.energy(i,j);
+					//System.out.println(energyMap[i][j]);
+				}
+			}
+
+			if (newInput.getWidth() > width){
+				seam = this.findVerticalSeam();
+				System.out.println("Seam " + seam);
+				//this.removeVerticalSeam(seam);
+				currDimension = newInput.getWidth();
+			} else {
+				seam = this.findHorizontalSeam();
+				System.out.println("Seam " + seam);
+				//this.removeHorizontalSeam(seam);
+				currDimension = newInput.getHeight();
+			}
+			currDimension--;
+
+
+		}//While end
 
 	};
 
