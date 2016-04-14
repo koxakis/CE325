@@ -82,95 +82,127 @@ public class SeamCarver {
 	// return horizontal seam
 	public int[] findHorizontalSeam(){
 		int[] seam = new int[newInput.getWidth()];
-		int i, j;
-		double minEnergy;
+		int[] minSeam = new int[newInput.getWidth()];
+		int i, j, k;
+		double minEnergy, seamSum, minSeamSum;
 
-		minEnergy = energyMap[0][0];
-		seam[0] = 0;
-		for( i=1; i<newInput.getHeight() ; i++){
-			if (energyMap[i][0] < minEnergy) {
-				minEnergy = energyMap[i][0];
-				seam[0] = i;
+		for (i=0; i<newInput.getWidth(); i++) {
+			minEnergy = energyMap[0][i];
+			seam[0] = i;
+			seamSum = energyMap[0][i];
+			/*
+			for( i=1; i<newInput.getHeight() ; i++){
+				if (energyMap[i][0] < minEnergy) {
+					minEnergy = energyMap[i][0];
+					seam[0] = i;
+				}
 			}
+			*/
+
+			for( j=1; j<newInput.getWidth(); j++){
+				minEnergy = energyMap[(seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight()][j];
+				seam[j] = (seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight();
+				if (energyMap[seam[j-1]][j] < minEnergy) {
+					minEnergy = energyMap[seam[j-1]][j];
+					seam[j] = seam[j-1];
+				} else if (energyMap[(seam[j-1] + 1) % newInput.getHeight()][j] < minEnergy) {
+					minEnergy = energyMap[(seam[j-1] + 1) % newInput.getHeight()][j];
+					seam[j] = (seam[j-1] + 1) % newInput.getHeight();
+				}
+
+			}
+
+
+			//if ()
+
 		}
 
-		for( j=1; j<newInput.getWidth(); j++){
-			minEnergy = energyMap[(seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight()][j];
-			seam[j] = (seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight();
-			if (energyMap[seam[j-1]][j] < minEnergy) {
-				minEnergy = energyMap[seam[j-1]][j];
-				seam[j] = seam[j-1];
-			} else if (energyMap[(seam[j-1] + 1) % newInput.getHeight()][j] < minEnergy) {
-				minEnergy = energyMap[(seam[j-1] + 1) % newInput.getHeight()][j];
-				seam[j] = (seam[j-1] + 1) % newInput.getHeight();
-			}
-
-		}
-
-		return seam;
+		return minSeam;
 	};
 
 	// return vertical seam
 	public int[] findVerticalSeam(){
 		int[] seam = new int[newInput.getHeight()];
-		int i, j, flag = 0;
-		double minEnergy;
+		int[] minSeam = new int[newInput.getWidth()];
+		int i, j, k, flag = 0, flag2 = 0;
+		double minEnergy, seamSum, minSeamSum = 0;
 
 
-		minEnergy = energyMap[0][0];
-		seam[0] = 0;
-		for( j=1; j<newInput.getWidth() ; j++){
-			if (energyMap[0][j] < minEnergy) {
-				minEnergy = energyMap[0][j];
-				seam[0] = j;
-			}
-		}
-
-		for( i=1; i<newInput.getHeight(); i++){
+		for (j=0; j<newInput.getWidth(); j++) {
+			minEnergy = energyMap[0][j];
+			seam[0] = j;
+			seamSum = energyMap[0][j];
 			/*
-			minEnergy = energyMap[i][(seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth()];
-			seam[i] = (seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth();
-			if (energyMap[i][seam[i-1]] < minEnergy) {
-				minEnergy = energyMap[i][seam[i-1]];
-				seam[i] = seam[i-1];
-			} else if (energyMap[i][(seam[i-1] + 1) % newInput.getWidth()] < minEnergy) {
-				minEnergy = energyMap[i][(seam[i-1] + 1) % newInput.getWidth()];
-				seam[i] = (seam[i-1] + 1) % newInput.getWidth();
+			for( j=1; j<newInput.getWidth() ; j++){
+				if (energyMap[0][j] < minEnergy) {
+					minEnergy = energyMap[0][j];
+					seam[0] = j;
+				}
 			}
 			*/
-			///*
-			flag = 0;
-			minEnergy = energyMap[i][seam[i-1]];
-			seam[i] = seam[i-1];
-			if ( seam[i]-1 < 0 ){
-				if( energyMap[i][seam[i-1]+1] < minEnergy){
-					minEnergy = energyMap[i][seam[i-1] + 1];
-					seam[i] = seam[i-1] + 1;
+
+			for( i=1; i<newInput.getHeight(); i++){
+				/*
+				minEnergy = energyMap[i][(seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth()];
+				seam[i] = (seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth();
+				if (energyMap[i][seam[i-1]] < minEnergy) {
+					minEnergy = energyMap[i][seam[i-1]];
+					seam[i] = seam[i-1];
+				} else if (energyMap[i][(seam[i-1] + 1) % newInput.getWidth()] < minEnergy) {
+					minEnergy = energyMap[i][(seam[i-1] + 1) % newInput.getWidth()];
+					seam[i] = (seam[i-1] + 1) % newInput.getWidth();
 				}
+				*/
+				///*
+				flag = 0;
+				minEnergy = energyMap[i][seam[i-1]];
+				seam[i] = seam[i-1];
+				if ( seam[i]-1 < 0 ){
+					if( energyMap[i][seam[i-1]+1] < minEnergy){
+						minEnergy = energyMap[i][seam[i-1] + 1];
+						seam[i] = seam[i-1] + 1;
+					}
+					flag = 1;
+				}
+				if ( seam[i]+1 > newInput.getWidth()){
+					if( energyMap[i][seam[i-1]-1] < minEnergy ){
+						minEnergy = energyMap[i][seam[i-1] - 1];
+						seam[i] = seam[i-1] - 1;
+					}
+					flag = 1;
+				}
+				if (flag == 0){
+					if( energyMap[i][seam[i-1]+1] < minEnergy){
+						minEnergy = energyMap[i][seam[i-1] + 1];
+						seam[i] = seam[i-1] + 1;
+					}
+					if( energyMap[i][seam[i-1]-1] < minEnergy ){
+						minEnergy = energyMap[i][seam[i-1] - 1];
+						seam[i] = seam[i-1] - 1;
+					}
+				}
+
+				seamSum = seamSum + minEnergy;
+
+				//*/
+
+			}
+
+			if ((seamSum < minSeamSum) && (flag == 1)) {
+				minSeamSum = seamSum;
+				minSeam = seam;
+			}
+
+			if (flag == 0) {
+				minSeamSum = seamSum;
+				minSeam = seam;
 				flag = 1;
 			}
-			if ( seam[i]+1 > newInput.getWidth()){
-				if( energyMap[i][seam[i-1]-1] < minEnergy ){
-					minEnergy = energyMap[i][seam[i-1] - 1];
-					seam[i] = seam[i-1] - 1;
-				}
-				flag = 1;
-			}
-			if (flag == 0){
-				if( energyMap[i][seam[i-1]+1] < minEnergy){
-					minEnergy = energyMap[i][seam[i-1] + 1];
-					seam[i] = seam[i-1] + 1;
-				}
-				if( energyMap[i][seam[i-1]-1] < minEnergy ){
-					minEnergy = energyMap[i][seam[i-1] - 1];
-					seam[i] = seam[i-1] - 1;
-				}
-			}
-			//*/
+
 
 		}
 		//System.out.println("Seam " + Arrays.toString(seam));
-		return seam;
+		return minSeam;
 	};
 
 	// remove the seam
