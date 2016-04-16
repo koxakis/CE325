@@ -10,59 +10,62 @@ import java.io.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
+import java.util.InputMismatchException;
 import javax.annotation.*;
 import javax.imageio.ImageIO;
 import java.util.Arrays;
 
 public class SeamCarver {
 
-	public static BufferedImage newInput;
+	public static BufferedImage importedImage;
 	public int[] pixelMap;
 	public double[][] energyMap;
 
-	//Constractors for different input methods
+	//Constructors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image) throws IOException{
 		//Take BufferedImage and create RGB and energy tables
-		newInput = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		importedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-		Graphics2D temp = newInput.createGraphics();
+		//Drawing image to a buffered image format
+		Graphics2D temp = importedImage.createGraphics();
 		temp.drawImage(image, 0, 0, null);
 		temp.dispose();
 	};
 
 	public SeamCarver(java.io.File file) throws IOException{
 		//Use file io to open the image
-		//Convert File->BufferedImage and call said Constractor with this
 		BufferedImage input = ImageIO.read(file);
-		newInput = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		importedImage = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-		Graphics2D temp = newInput.createGraphics();
+		//Drawing image to a buffered image format
+		Graphics2D temp = importedImage.createGraphics();
 		temp.drawImage(input, 0, 0, null);
 		temp.dispose();
 	};
 
 	public SeamCarver(java.net.URL url) throws IOException{
 		//Download image from site
-		//Convert url->BufferedImage and call said Constractor with this
 		BufferedImage input = ImageIO.read(url);
-		newInput = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		importedImage = new BufferedImage(input.getWidth(), input.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-		Graphics2D temp = newInput.createGraphics();
+		//Drawing image to a buffered image format
+		Graphics2D temp = importedImage.createGraphics();
 		temp.drawImage(input, 0, 0, null);
 		temp.dispose();
 
 	};
 
-	// energy of a pixel
+	//Find the energy of a pixel and return overall energy
 	public double energy(int row, int col){
 
 		int posN, posS, posE, posW;
 		double energyX, energyY, energyOverall;
 
-		posW = (row*newInput.getWidth()) + ( ( (col + newInput.getWidth() ) - 1) % newInput.getWidth());
-		posE = (row*newInput.getWidth()) + ( (col + 1) % newInput.getWidth() );
-		posN = ( ( ( (row + newInput.getHeight() ) - 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
-		posS = ( ( (row + 1) % newInput.getHeight() ) * newInput.getWidth() ) + col ;
+		//Using modulo in order to transverse each line/column circularly
+		posW = (row*importedImage.getWidth()) + ( ( (col + importedImage.getWidth() ) - 1) % importedImage.getWidth());
+		posE = (row*importedImage.getWidth()) + ( (col + 1) % importedImage.getWidth() );
+		posN = ( ( ( (row + importedImage.getHeight() ) - 1) % importedImage.getHeight() ) * importedImage.getWidth() ) + col ;
+		posS = ( ( (row + 1) % importedImage.getHeight() ) * importedImage.getWidth() ) + col ;
 
 		//E​x(i,j) = [R(i,j+1) - R(i,j-­1)]^2​+ [G(i,j+1) ­- G(i,j-­1)]^2​ + [B(i,j+1) ­- B(i,j­-1)]^2​
 		energyX = Math.pow( ((pixelMap[posW] >> 16) & 0xFF) - ((pixelMap[posE] >> 16) & 0xFF), 2 ) +
@@ -79,82 +82,89 @@ public class SeamCarver {
 		return energyOverall;
 	};
 
-	// return horizontal seam
+	//Return horizontal seam
 	public int[] findHorizontalSeam(){
-		int[] seam = new int[newInput.getWidth()];
-		int[] minSeam = new int[newInput.getWidth()];
-		int i, j, k;
-		double minEnergy, seamSum, minSeamSum;
+		int[] seam = new int[importedImage.getWidth()];
+		int[] minSeam = new int[importedImage.getWidth()];
+		int i, j, k, flag = 0 , flag2 = 0;
+		double minEnergy, seamSum, minSeamSum = 0;
 
-		for (i=0; i<newInput.getWidth(); i++) {
-			minEnergy = energyMap[0][i];
+		//Sets the seam's starting point starting from every pixel on the first row
+		for (i=0; i<importedImage.getHeight(); i++) {
+			minEnergy = energyMap[i][0];
 			seam[0] = i;
-			seamSum = energyMap[0][i];
-			/*
-			for( i=1; i<newInput.getHeight() ; i++){
-				if (energyMap[i][0] < minEnergy) {
-					minEnergy = energyMap[i][0];
-					seam[0] = i;
+			seamSum = energyMap[i][0];
+
+			//Chooses the pixel with the least energy according to the Seam Carving algorithm
+			for( j=1; j<importedImage.getWidth(); j++){
+
+				//Flag2 dictates if the pixel is located to either end of the energy matrix
+				flag2 = 0;
+				minEnergy = energyMap[seam[j-1]][j];
+				seam[j] = seam[j-1];
+				if ( seam[j]-1 < 0 ){
+					if( energyMap[seam[j-1]+1][j] < minEnergy){
+						minEnergy = energyMap[seam[j-1]+1][j];
+						seam[j] = seam[j-1] + 1;
+					}
+					flag2 = 1;
 				}
-			}
-			*/
-
-			for( j=1; j<newInput.getWidth(); j++){
-				minEnergy = energyMap[(seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight()][j];
-				seam[j] = (seam[j-1] + newInput.getHeight() - 1) % newInput.getHeight();
-				if (energyMap[seam[j-1]][j] < minEnergy) {
-					minEnergy = energyMap[seam[j-1]][j];
-					seam[j] = seam[j-1];
-				} else if (energyMap[(seam[j-1] + 1) % newInput.getHeight()][j] < minEnergy) {
-					minEnergy = energyMap[(seam[j-1] + 1) % newInput.getHeight()][j];
-					seam[j] = (seam[j-1] + 1) % newInput.getHeight();
+				if ( seam[j]+1 > importedImage.getHeight()){
+					if( energyMap[seam[j-1]-1][j] < minEnergy ){
+						minEnergy = energyMap[seam[j-1]-1][j];
+						seam[j] = seam[j-1] - 1;
+					}
+					flag2 = 1;
+				}
+				if (flag2 == 0){
+					if( energyMap[seam[j-1]+1][j] < minEnergy){
+						minEnergy = energyMap[seam[j-1]+1][j];
+						seam[j] = seam[j-1] + 1;
+					}
+					if( energyMap[seam[j-1]-1][j] < minEnergy ){
+						minEnergy = energyMap[seam[j-1]-1][j];
+						seam[j] = seam[j-1] - 1;
+					}
 				}
 
+				seamSum = seamSum + minEnergy;
+
 			}
 
+			//Flag dictates first iteration
+			if ((seamSum < minSeamSum) && (flag == 1)) {
+				minSeamSum = seamSum;
+				minSeam = seam;
+			}
 
-			//if ()
-
-		}
+			if (flag == 0) {
+				minSeamSum = seamSum;
+				minSeam = seam;
+				flag = 1;
+			}
+		}//End of outside for loop
 
 		return minSeam;
 	};
 
-	// return vertical seam
+	//Return vertical seam
 	public int[] findVerticalSeam(){
-		int[] seam = new int[newInput.getHeight()];
-		int[] minSeam = new int[newInput.getWidth()];
-		int i, j, k, flag = 0, flag2 = 0;
+		int[] seam = new int[importedImage.getHeight()];
+		int[] minSeam = new int[importedImage.getHeight()];
+		int i, j, k, flag = 0 , flag2 = 0;
 		double minEnergy, seamSum, minSeamSum = 0;
 
-
-		for (j=0; j<newInput.getWidth(); j++) {
+		//Sets the seam's starting point starting from every pixel on the first row
+		for (j=0; j<importedImage.getWidth(); j++) {
 			minEnergy = energyMap[0][j];
 			seam[0] = j;
 			seamSum = energyMap[0][j];
-			/*
-			for( j=1; j<newInput.getWidth() ; j++){
-				if (energyMap[0][j] < minEnergy) {
-					minEnergy = energyMap[0][j];
-					seam[0] = j;
-				}
-			}
-			*/
 
-			for( i=1; i<newInput.getHeight(); i++){
-				/*
-				minEnergy = energyMap[i][(seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth()];
-				seam[i] = (seam[i-1] + newInput.getWidth() - 1) % newInput.getWidth();
-				if (energyMap[i][seam[i-1]] < minEnergy) {
-					minEnergy = energyMap[i][seam[i-1]];
-					seam[i] = seam[i-1];
-				} else if (energyMap[i][(seam[i-1] + 1) % newInput.getWidth()] < minEnergy) {
-					minEnergy = energyMap[i][(seam[i-1] + 1) % newInput.getWidth()];
-					seam[i] = (seam[i-1] + 1) % newInput.getWidth();
-				}
-				*/
-				///*
-				flag = 0;
+			//Chooses the pixel with the least energy according to the Seam Carving algorithm
+			for( i=1; i<importedImage.getHeight(); i++){
+
+				//Flag2 dictates if the pixel is located to either end of the energy matrix
+				flag2 = 0;
 				minEnergy = energyMap[i][seam[i-1]];
 				seam[i] = seam[i-1];
 				if ( seam[i]-1 < 0 ){
@@ -162,16 +172,16 @@ public class SeamCarver {
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
 					}
-					flag = 1;
+					flag2 = 1;
 				}
-				if ( seam[i]+1 > newInput.getWidth()){
+				if ( seam[i]+1 > importedImage.getWidth()){
 					if( energyMap[i][seam[i-1]-1] < minEnergy ){
 						minEnergy = energyMap[i][seam[i-1] - 1];
 						seam[i] = seam[i-1] - 1;
 					}
-					flag = 1;
+					flag2 = 1;
 				}
-				if (flag == 0){
+				if (flag2 == 0){
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -184,10 +194,9 @@ public class SeamCarver {
 
 				seamSum = seamSum + minEnergy;
 
-				//*/
-
 			}
 
+			//Flag dictates first iteration
 			if ((seamSum < minSeamSum) && (flag == 1)) {
 				minSeamSum = seamSum;
 				minSeam = seam;
@@ -198,76 +207,97 @@ public class SeamCarver {
 				minSeam = seam;
 				flag = 1;
 			}
+		}//End of outside for loop
 
-
-		}
-		//System.out.println("Seam " + Arrays.toString(seam));
 		return minSeam;
 	};
 
-	// remove the seam
+	//Remove the seam
 	public void removeHorizontalSeam(int[] seam){
 
-
-
-	};
-
-	// remove the seam
-	public void removeVerticalSeam(int[] seam){
-
-		//System.out.println("Seam " + Arrays.toString(seam));
-		//System.out.println("Seam " + seam[0]);
-
 		int i, j, k;
-		int[] tempPixelMap = new int[(newInput.getWidth()*newInput.getHeight()) - newInput.getHeight()];
-		BufferedImage reconstructedImage = new BufferedImage(newInput.getWidth()-1, newInput.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		int[] tempPixelMap = new int[(importedImage.getWidth()*importedImage.getHeight()) - importedImage.getWidth()];
+		BufferedImage reconstructedImage = new BufferedImage(importedImage.getWidth(), importedImage.getHeight()-1, BufferedImage.TYPE_INT_ARGB);
 
+		//Creates new pixelMap without copying received seam
 		j = 0;
 		k = 0;
 		for (i=0; i<pixelMap.length; i++) {
-			if(i == j*newInput.getWidth() + seam[j] ) {
-				if( j < newInput.getHeight() - 1){
+			if(i == j*importedImage.getWidth() + seam[j] ) {
+				if( j < importedImage.getWidth() - 1){
 					j++;
 				}
-				//System.out.println("J is : " + j + "K is " + k);
 			} else {
 				tempPixelMap[k] = pixelMap[i];
 				if( k < tempPixelMap.length - 1){
 					k++;
 				}
-				//k++;
 			}
 		}
 
 		pixelMap = tempPixelMap;
 
+		//Reconstructs image based on the new pixelMap
 		k = 0;
-		//reconstructedImage.setRGB(318, 199, pixelMap[0]);
-
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
 			for (j=0; j<reconstructedImage.getWidth(); j++) {
 
-				//System.out.println("width "+reconstructedImage.getWidth()+" height "+reconstructedImage.getHeight());
-				//System.out.println("i "+i+" j "+j);
 				reconstructedImage.setRGB(j, i, pixelMap[k]);
 				k++;
 			}
 		}
 
-		newInput = reconstructedImage;
-		//System.out.println("New width " + newInput.getWidth());
+		importedImage = reconstructedImage;
 
 
+	};
+
+	//Remove the seam
+	public void removeVerticalSeam(int[] seam){
+
+		int i, j, k;
+		int[] tempPixelMap = new int[(importedImage.getWidth()*importedImage.getHeight()) - importedImage.getHeight()];
+		BufferedImage reconstructedImage = new BufferedImage(importedImage.getWidth()-1, importedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+		//Creates new pixelMap without copying received seam
+		j = 0;
+		k = 0;
+		for (i=0; i<pixelMap.length; i++) {
+			if(i == j*importedImage.getWidth() + seam[j] ) {
+				if( j < importedImage.getHeight() - 1){
+					j++;
+				}
+			} else {
+				tempPixelMap[k] = pixelMap[i];
+				if( k < tempPixelMap.length - 1){
+					k++;
+				}
+			}
+		}
+
+		pixelMap = tempPixelMap;
+
+		//Reconstructs image based on the new pixelMap
+		k = 0;
+		for (i=0; i<reconstructedImage.getHeight(); i++) {
+			for (j=0; j<reconstructedImage.getWidth(); j++) {
+
+				reconstructedImage.setRGB(j, i, pixelMap[k]);
+				k++;
+			}
+		}
+
+		importedImage = reconstructedImage;
 	};
 
 	/* scale to the optimal
 	dimensions before applying
 	SeamCarve algorithm */
 	private void scale(int width, int height){
-		BufferedImage oldImage = newInput;
-		newInput = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage oldImage = importedImage;
+		importedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-		Graphics2D temp = newInput.createGraphics();
+		Graphics2D temp = importedImage.createGraphics();
 		temp.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		temp.drawImage(oldImage, 0, 0, width, height,null);
 		temp.dispose();
@@ -282,11 +312,11 @@ public class SeamCarver {
 		int cuttingDimension, currDimension;
 		int[] seam;
 
-		energyMap = new double[newInput.getHeight()][newInput.getWidth()];
+		energyMap = new double[importedImage.getHeight()][importedImage.getWidth()];
 
-		ratio = (double) newInput.getWidth() / (double) newInput.getHeight();
-		//System.out.println("The ratio is: " + ratio);
+		ratio = (double) importedImage.getWidth() / (double) importedImage.getHeight();
 
+		//Decide if the image needs scaling and by how much and applies it
 		if( ((int) ( width/ratio )) < height ) {
 			optimalWidth = (int) (ratio * height);
 			System.out.println("\nScaling down to " + optimalWidth + "x" + height + " for optimal resaults");
@@ -297,38 +327,38 @@ public class SeamCarver {
 			this.scale(width,optimalHeight);
 		}
 
-		if (newInput.getWidth() > width){
+		//Decide which dimension to reduce
+		if (importedImage.getWidth() > width){
 			cuttingDimension = width;
-			currDimension = newInput.getWidth();
+			currDimension = importedImage.getWidth();
 		} else {
 			cuttingDimension = height;
-			currDimension = newInput.getHeight();
+			currDimension = importedImage.getHeight();
 		}
 
+		//Removes seams until we reach desired resolution
 		while ( currDimension > cuttingDimension ) {
-			pixelMap = ((DataBufferInt)newInput.getRaster().getDataBuffer()).getData();
+			pixelMap = ((DataBufferInt)importedImage.getRaster().getDataBuffer()).getData();
 
-			//System.out.println("width "+newInput.getWidth()+" height "+newInput.getHeight());
-			for (int i=0; i < newInput.getHeight(); i++){
-				for (int j=0; j < newInput.getWidth(); j++){
+			//Creating energyMap for the image
+			for (int i=0; i < importedImage.getHeight(); i++){
+				for (int j=0; j < importedImage.getWidth(); j++){
 					energyMap[i][j] = this.energy(i,j);
-					//System.out.println("i "+i+" j "+j);
-					//System.out.println(energyMap[i][j]);
 				}
 			}
 
-			if (newInput.getWidth() > width){
+			//Call corresponding seam retrieval and removal method
+			if (importedImage.getWidth() > width){
 				seam = this.findVerticalSeam();
 
 				this.removeVerticalSeam(seam);
-				currDimension = newInput.getWidth();
+				currDimension = importedImage.getWidth();
 			} else {
 				seam = this.findHorizontalSeam();
-				System.out.println("Seam " + Arrays.toString(seam));
-				//this.removeHorizontalSeam(seam);
-				//currDimension = newInput.getHeight();
+
+				this.removeHorizontalSeam(seam);
+				currDimension = importedImage.getHeight();
 			}
-			//currDimension--;
 
 
 		}//While end
@@ -345,58 +375,85 @@ public class SeamCarver {
 		Scanner userInput = new Scanner(System.in);
 		String path = new String();
 
-		System.out.print("Welcome to Image Resizer 3000 \n");
+		System.out.print("Welcome to Image Resizer 3000 \nNow using the all-new Seam Carving formula!!!\n");
 
+		//Parce user input and call the apropriate constructor
 		try{
 			path = args[0];
 		}catch(ArrayIndexOutOfBoundsException e){
-			System.out.print("Please enter a valid path or URL: ");
+			System.out.print("\nPlease enter a valid path or URL: ");
 			path = userInput.next();
 		}
+
+		//Require new input from user if no valid input is given
 		while(flag){
 			try {
+
+				//Atempt to create a java.net.URL object to check if input is a valid URL
 				java.net.URL imageInput = new java.net.URL(path);
 				userImage = new SeamCarver(imageInput);
 				flag = false;
-			} catch(Exception ex) {
-				//ex.printStackTrace();
+			} catch(IOException ex) {
+
 				System.out.println("\nNo URL detected scanning for file (" + ex.getMessage() + ")" );
 				try {
+
+					//Atempt to create a java.io.File object to check if input is a valid local path
 					java.io.File imageInput = new java.io.File(path);
 					userImage = new SeamCarver(imageInput);
 					flag = false;
-				} catch(Exception ex2) {
-					//ex2.printStackTrace();
+				} catch(IOException ex2) {
+
+					//At this point no valid input was given. Require user to insert new
 					System.out.println("No file detected (" + ex2.getMessage() + ")" + "\n");
 					System.out.print("Couln't retrieve an image from either source\nPlease provide new path to an image: ");
 					path = userInput.next();
 					//Loop for user input
-				}//2nd catch end
+				} catch(Exception ex3) {
+
+					System.out.println("Something went horobly wrong " + ex3.getMessage());
+				}//finally end
 			}//1st catch end
 		}//While flag end
 
-		System.out.println("The image you imported is: " + newInput.getWidth() + "x" + newInput.getHeight());
+		//Print imported image data
+		System.out.println("The image you imported is: " + importedImage.getWidth() + "x" + importedImage.getHeight());
+
+		//Require new image resolution form user. Ask for new ones if no valid is given
 		System.out.print("\nEnter resizing dimensions\nEnter width: ");
-		newWidth = userInput.nextInt();
+		try{
+			newWidth = userInput.nextInt();
+		} catch (InputMismatchException ex3){
+			newWidth = -1 ;
+		}
 
 		while(newWidth <= 0){
-			System.out.print("Please enter correct width (width > 0): ");
-			newWidth = userInput.nextInt();
+			System.out.print("Please enter correct width (width > 0 && type integer): ");
+			try{
+				newWidth = userInput.nextInt();
+			} catch (InputMismatchException ex3){
+			}
 		}
 
 		System.out.print("Enter height: ");
-		newHeight = userInput.nextInt();
-
-		while(newHeight <= 0){
-			System.out.print("Please enter correct height (height > 0): ");
+		try{
 			newHeight = userInput.nextInt();
+		} catch (InputMismatchException ex4){
+			newHeight = -1 ;
 		}
 
-		//can put String composition and autocomplete the .png extencion and ask user for a valid name != emtey
+		while(newHeight <= 0){
+			System.out.print("Please enter correct height (height > 0 && type integer): ");
+			try{
+				newHeight = userInput.nextInt();
+			} catch (InputMismatchException ex3){
+			}
+		}
+
 		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
 		path = userInput.next();
 
-
+		//Check for valid file extension
 		while (!path.toLowerCase().endsWith(".png")) {
 			System.out.print("\nFile name entered is not a *.png\nPlease enter new file name: ");
 			path = userInput.next();
@@ -404,19 +461,19 @@ public class SeamCarver {
 
 		targetFile = new File(path);
 
+		//Check if target file exists in output directory
 		if ( targetFile.exists() ){
 			System.out.println("\nFile name " + targetFile.getName() + " already exists");
 		}else{
 			userImage.seamCarve(newWidth, newHeight);
-			//Oputputs a buffered image to a file Use for final output
+
+			//Outputs a buffered image to a file used for final output
 			try{
-				ImageIO.write(newInput, "png", targetFile);
+				ImageIO.write(importedImage, "png", targetFile);
 			} catch(IOException e) {
 
 			}
 		}
-
-
 
 	}//Main end
 }//Class end
