@@ -368,7 +368,7 @@ public class SeamCarver {
 	public static void main(String[] args) {
 
 		boolean flag = true;
-		int newWidth, newHeight;
+		int newWidth = 0, newHeight = 0 ;
 		SeamCarver userImage = null;
 		File targetFile;
 
@@ -421,34 +421,39 @@ public class SeamCarver {
 
 		//Require new image resolution form user. Ask for new ones if no valid is given
 		System.out.print("\nEnter resizing dimensions\nEnter width: ");
-		try{
-			newWidth = userInput.nextInt();
-		} catch (InputMismatchException ex3){
-			newWidth = -1 ;
-		}
 
-		while(newWidth <= 0){
-			System.out.print("Please enter correct width (width > 0 && type integer): ");
-			try{
-				newWidth = userInput.nextInt();
-			} catch (InputMismatchException ex3){
-			}
-		}
+		flag = true;
+		do{
+			do{
+				try{
+					newWidth = userInput.nextInt();
+					if(newWidth <= 0){
+						System.out.print("Please enter correct width (width > 0 && type integer): ");
+					}
+					flag = false;
+				}catch(InputMismatchException ex3){
+					System.out.print("Please enter correct width (width > 0 && type integer): ");
+					userInput.next();
+				}
+			}while(newWidth <= 0);
+		}while(flag);
 
 		System.out.print("Enter height: ");
-		try{
-			newHeight = userInput.nextInt();
-		} catch (InputMismatchException ex4){
-			newHeight = -1 ;
-		}
-
-		while(newHeight <= 0){
-			System.out.print("Please enter correct height (height > 0 && type integer): ");
-			try{
-				newHeight = userInput.nextInt();
-			} catch (InputMismatchException ex3){
-			}
-		}
+		flag = true;
+		do{
+			do{
+				try{
+					newHeight = userInput.nextInt();
+					if(newHeight <= 0){
+						System.out.print("Please enter correct height (height > 0 && type integer): ");
+					}
+					flag = false;
+				}catch(InputMismatchException ex4){
+					System.out.print("Please enter correct height (height > 0 && type integer): ");
+					userInput.next();
+				}
+			}while(newHeight <= 0);
+		}while(flag);
 
 		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
 		path = userInput.next();
