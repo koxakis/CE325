@@ -473,14 +473,22 @@ public class SeamCarver {
 		imageFileName = path;
 		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
 		path = userInput.next();
+		path = path + ".png";
 
 		//Check for valid file extension
 		while (!path.toLowerCase().endsWith(".png")) {
 			System.out.print("\nFile name entered is not a *.png\nPlease enter new file name: ");
 			path = userInput.next();
+
 		}
 
 		targetFile = new File(path);
+
+		if (imageFileName.endsWith(".png") || imageFileName.endsWith(".jpg")){
+			imageFileName = imageFileName.substring(0, imageFileName.length() - 4);
+		} else if (imageFileName.endsWith(".jpeg")){
+			imageFileName = imageFileName.substring(0, imageFileName.length() - 5);
+		}
 
 		targetDebugFileName = imageFileName + "_" + newWidth + "x" + newHeight + ".dbg";
 
