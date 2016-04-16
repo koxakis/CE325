@@ -20,6 +20,8 @@ public class SeamCarver {
 	public static BufferedImage importedImage;
 	public int[] pixelMap;
 	public double[][] energyMap;
+	public static File targetDebugFile;
+	public static PrintWriter out;
 
 	//Constructors for different input methods
 	public SeamCarver(java.awt.image.BufferedImage image) throws IOException{
@@ -144,6 +146,8 @@ public class SeamCarver {
 			}
 		}//End of outside for loop
 
+		out.println(Arrays.toString(minSeam));
+
 		return minSeam;
 	};
 
@@ -208,6 +212,8 @@ public class SeamCarver {
 				flag = 1;
 			}
 		}//End of outside for loop
+
+		out.println(Arrays.toString(minSeam));
 
 		return minSeam;
 	};
@@ -320,12 +326,18 @@ public class SeamCarver {
 		if( ((int) ( width/ratio )) < height ) {
 			optimalWidth = (int) (ratio * height);
 			System.out.println("\nScaling down to " + optimalWidth + "x" + height + " for optimal resaults");
+
+			out.println("SCALE DIMENSIONS: " + optimalWidth + "x" + height);
 			this.scale(optimalWidth,height);
 		} else {
 			optimalHeight = (int) ( width/ratio );
 			System.out.println("\nScaling down to " + width + "x" + optimalHeight + " for optimal resaults");
+
+			out.println("SCALE DIMENSIONS: " + width + "x" + optimalHeight);
 			this.scale(width,optimalHeight);
 		}
+
+		out.println("SEAMCARVE DIMENSIONS: " + width + "x" + height);
 
 		//Decide which dimension to reduce
 		if (importedImage.getWidth() > width){
@@ -349,13 +361,13 @@ public class SeamCarver {
 
 			//Call corresponding seam retrieval and removal method
 			if (importedImage.getWidth() > width){
-				seam = this.findVerticalSeam();
 
+				seam = this.findVerticalSeam();
 				this.removeVerticalSeam(seam);
 				currDimension = importedImage.getWidth();
 			} else {
-				seam = this.findHorizontalSeam();
 
+				seam = this.findHorizontalSeam();
 				this.removeHorizontalSeam(seam);
 				currDimension = importedImage.getHeight();
 			}
@@ -371,6 +383,7 @@ public class SeamCarver {
 		int newWidth = 0, newHeight = 0 ;
 		SeamCarver userImage = null;
 		File targetFile;
+		String targetDebugFileName, imageFileName;
 
 		Scanner userInput = new Scanner(System.in);
 		String path = new String();
@@ -383,6 +396,7 @@ public class SeamCarver {
 		}catch(ArrayIndexOutOfBoundsException e){
 			System.out.print("\nPlease enter a valid path or URL: ");
 			path = userInput.next();
+			imageFileName = path;
 		}
 
 		//Require new input from user if no valid input is given
@@ -455,6 +469,8 @@ public class SeamCarver {
 			}while(newHeight <= 0);
 		}while(flag);
 
+		//Save original image file-name
+		imageFileName = path;
 		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
 		path = userInput.next();
 
@@ -466,17 +482,30 @@ public class SeamCarver {
 
 		targetFile = new File(path);
 
+		targetDebugFileName = imageFileName + "_" + newWidth + "x" + newHeight + ".dbg";
+
 		//Check if target file exists in output directory
 		if ( targetFile.exists() ){
 			System.out.println("\nFile name " + targetFile.getName() + " already exists");
 		}else{
-			userImage.seamCarve(newWidth, newHeight);
+			targetDebugFile = new File(targetDebugFileName);
 
+			try{
+				out = new PrintWriter(targetDebugFile);
+				out.println("INIT DIMENSIONS: " + importedImage.getWidth() + "x" + importedImage.getHeight());
+
+			} catch(IOException e1) {
+				System.out.println("Error in image creation " + e1.getMessage());
+			}
+
+			//Start the algorithm
+			userImage.seamCarve(newWidth, newHeight);
+			out.close();
 			//Outputs a buffered image to a file used for final output
 			try{
 				ImageIO.write(importedImage, "png", targetFile);
 			} catch(IOException e) {
-
+				System.out.println("Error in image creation " + e.getMessage());
 			}
 		}
 
