@@ -161,12 +161,12 @@ public class SeamCarver {
 		//Sets the seam's starting point starting from every pixel on the first row
 
 		for (j=0; j<importedImage.getWidth(); j++) {
-			System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
+			//System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
 			minEnergy = energyMap[0][j];
 			seam[0] = j;
 			seamSum = energyMap[0][j];
 
-			System.out.println("||| The J is : " + j + " "+ energyMap[0][j] + " " + minEnergy + " " + seamSum + "\n");
+			//System.out.println("The i is 0 And the J is : " + j + " min energy " + minEnergy + " seam :" + seam[0]);
 
 			//Chooses the pixel with the least energy according to the Seam Carving algorithm
 			for( i=1; i<importedImage.getHeight(); i++){
@@ -176,15 +176,15 @@ public class SeamCarver {
 				minEnergy = energyMap[i][seam[i-1]];
 				seam[i] = seam[i-1];
 				if ( seam[i]-1 < 0 ){
-					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
+					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
 					}
 					flag2 = 1;
 				}
-				if ( seam[i]+1 > importedImage.getWidth()){
-					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
+				if ( seam[i]+1 > importedImage.getWidth()-1 ){
+					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]-1] < minEnergy ){
 						minEnergy = energyMap[i][seam[i-1] - 1];
 						seam[i] = seam[i-1] - 1;
@@ -192,7 +192,7 @@ public class SeamCarver {
 					flag2 = 1;
 				}
 				if (flag2 == 0){
-					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
+					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]+1] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -202,26 +202,31 @@ public class SeamCarver {
 						seam[i] = seam[i-1] - 1;
 					}
 				}
+				//System.out.println("The i is " + i + " And the J is : " + j + " min energy " + minEnergy + " seam :" + seam[i]);
 
 				seamSum = seamSum + minEnergy;
 
 			}
 
+			//System.out.println("Seam column " + j + " is " + Arrays.toString(seam) + " with energySum = "+ seamSum);
+
 			//Flag dictates first iteration
 			if ((seamSum < minSeamSum) && (flag == 1)) {
 				minSeamSum = seamSum;
-				minSeam = seam;
+				System.arraycopy( seam, 0, minSeam, 0, seam.length );
 			}
 
 			if (flag == 0) {
 				minSeamSum = seamSum;
-				minSeam = seam;
+				System.arraycopy( seam, 0, minSeam, 0, seam.length );
 				flag = 1;
 			}
+
+			//System.out.println("\nminSeam is now: " + Arrays.toString(minSeam) + " with energy = " + minSeamSum + "\n");
 		}//End of outside for loop
 
-		System.out.println(Arrays.toString(minSeam));
-		//out.println();
+
+		//System.out.println(Arrays.toString(minSeam));
 
 		return minSeam;
 	};
@@ -290,7 +295,7 @@ public class SeamCarver {
 		}
 
 		pixelMap = tempPixelMap;
-		System.out.println("getWidth is "  + reconstructedImage.getWidth() + " getHeight " + reconstructedImage.getHeight());
+		//System.out.println("getWidth is "  + reconstructedImage.getWidth() + " getHeight " + reconstructedImage.getHeight());
 		//Reconstructs image based on the new pixelMap
 		k = 0;
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
@@ -304,7 +309,7 @@ public class SeamCarver {
 
 		importedImage = reconstructedImage;
 
-		System.out.println("New getWidth is "  + importedImage.getWidth() + "New getHeight " + importedImage.getHeight());
+		//System.out.println("New getWidth is "  + importedImage.getWidth() + "New getHeight " + importedImage.getHeight());
 
 		/*
 		try{
