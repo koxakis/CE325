@@ -159,19 +159,24 @@ public class SeamCarver {
 		double minEnergy, seamSum, minSeamSum = 0;
 
 		//Sets the seam's starting point starting from every pixel on the first row
+
 		for (j=0; j<importedImage.getWidth(); j++) {
+			System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
 			minEnergy = energyMap[0][j];
 			seam[0] = j;
 			seamSum = energyMap[0][j];
 
+			System.out.println("||| The J is : " + j + " "+ energyMap[0][j] + " " + minEnergy + " " + seamSum + "\n");
+
 			//Chooses the pixel with the least energy according to the Seam Carving algorithm
 			for( i=1; i<importedImage.getHeight(); i++){
-
+				//out.print(minSeam[i]);
 				//Flag2 dictates if the pixel is located to either end of the energy matrix
 				flag2 = 0;
 				minEnergy = energyMap[i][seam[i-1]];
 				seam[i] = seam[i-1];
 				if ( seam[i]-1 < 0 ){
+					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -179,6 +184,7 @@ public class SeamCarver {
 					flag2 = 1;
 				}
 				if ( seam[i]+1 > importedImage.getWidth()){
+					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
 					if( energyMap[i][seam[i-1]-1] < minEnergy ){
 						minEnergy = energyMap[i][seam[i-1] - 1];
 						seam[i] = seam[i-1] - 1;
@@ -186,6 +192,7 @@ public class SeamCarver {
 					flag2 = 1;
 				}
 				if (flag2 == 0){
+					System.out.println("The i is " + i + " And the J is : " + j + " " +energyMap[i][seam[i-1]+1] + " " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -213,7 +220,8 @@ public class SeamCarver {
 			}
 		}//End of outside for loop
 
-		out.println(Arrays.toString(minSeam));
+		System.out.println(Arrays.toString(minSeam));
+		//out.println();
 
 		return minSeam;
 	};
@@ -282,7 +290,7 @@ public class SeamCarver {
 		}
 
 		pixelMap = tempPixelMap;
-
+		System.out.println("getWidth is "  + reconstructedImage.getWidth() + " getHeight " + reconstructedImage.getHeight());
 		//Reconstructs image based on the new pixelMap
 		k = 0;
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
@@ -293,7 +301,19 @@ public class SeamCarver {
 			}
 		}
 
+
 		importedImage = reconstructedImage;
+
+		System.out.println("New getWidth is "  + importedImage.getWidth() + "New getHeight " + importedImage.getHeight());
+
+		/*
+		try{
+			File outputfile = new File("saved.png");
+			ImageIO.write(importedImage, "png", outputfile);
+		} catch(IOException e) {
+			System.out.println("Error in image creation " + e.getMessage());
+		}*/
+
 	};
 
 	/* scale to the optimal
@@ -351,7 +371,7 @@ public class SeamCarver {
 		//Removes seams until we reach desired resolution
 		while ( currDimension > cuttingDimension ) {
 			pixelMap = ((DataBufferInt)importedImage.getRaster().getDataBuffer()).getData();
-
+			//energyMap = new double[importedImage.getHeight()][importedImage.getWidth()];
 			//Creating energyMap for the image
 			for (int i=0; i < importedImage.getHeight(); i++){
 				for (int j=0; j < importedImage.getWidth(); j++){
@@ -471,9 +491,10 @@ public class SeamCarver {
 
 		//Save original image file-name
 		imageFileName = path;
-		System.out.print("\nEnter a file name for the resized image (ending in *.png): ");
+		System.out.print("\nEnter a file name for the resized image: ");
 		path = userInput.next();
 		path = path + ".png";
+
 
 		//Check for valid file extension
 		while (!path.toLowerCase().endsWith(".png")) {
@@ -481,6 +502,7 @@ public class SeamCarver {
 			path = userInput.next();
 
 		}
+
 
 		targetFile = new File(path);
 
