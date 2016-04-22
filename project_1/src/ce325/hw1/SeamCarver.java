@@ -265,7 +265,7 @@ public class SeamCarver {
 		}
 
 		k = 0;
-		for (i = 0; i < importedImage.getHeight(); i++) {
+		for (i = 0; i < importedImage.getHeight()-1; i++) {
         	for (j = 0; j < importedImage.getWidth(); j++) {
 				tempPixelMap[k] = pixelMap2DTmp[i][j];
 				k++;
