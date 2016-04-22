@@ -236,12 +236,13 @@ public class SeamCarver {
 	//Remove the seam
 	public void removeHorizontalSeam(int[] seam){
 
-		int i, j, k;
+		int i, j, k, l;
 		int[] tempPixelMap = new int[(importedImage.getWidth()*importedImage.getHeight()) - importedImage.getWidth()];
 		int[][] pixelMap2D = new int[importedImage.getHeight()][importedImage.getWidth()];
 		int[][] pixelMap2DTmp = new int[importedImage.getHeight()-1][importedImage.getWidth()];
 		BufferedImage reconstructedImage = new BufferedImage(importedImage.getWidth(), importedImage.getHeight()-1, BufferedImage.TYPE_INT_ARGB);
 
+		//Converts pixelMap array to 2D array
 		k=0;
 		for (i = 0; i < importedImage.getHeight(); i++) {
         	for (j = 0; j < importedImage.getWidth(); j++) {
@@ -250,20 +251,20 @@ public class SeamCarver {
         	}
     	}
 
-		//Creates new pixelMap without copying received seam
-
+		//Creates new 2D pixelMap without copying received seas
 		k = 0;
-		for (i = 0; i < importedImage.getHeight()-1; i++) {
-			for (j = 0; j < importedImage.getWidth(); j++) {
-				if (i == seam[k]){
-					k++;
-					continue;
-				}else{
-					pixelMap2DTmp[i][j] = pixelMap2D[i][j];
+		for (j = 0; j < importedImage.getWidth(); j++) {
+			l = 0;
+			for (i = 0; i < importedImage.getHeight(); i++) {
+				if (seam[k] != i) {
+					pixelMap2DTmp[l][j] = pixelMap2D[i][j];
+					l++;
 				}
 			}
+			k++;
 		}
 
+		//Converts the new 2D array back to 1D
 		k = 0;
 		for (i = 0; i < importedImage.getHeight()-1; i++) {
         	for (j = 0; j < importedImage.getWidth(); j++) {
@@ -271,7 +272,6 @@ public class SeamCarver {
 				k++;
         	}
     	}
-
 
 		pixelMap = tempPixelMap;
 
@@ -360,13 +360,13 @@ public class SeamCarver {
 		//Decide if the image needs scaling and by how much and applies it
 		if( ((int) ( width/ratio )) < height ) {
 			optimalWidth = (int) (ratio * height);
-			System.out.println("\nScaling down to " + optimalWidth + "x" + height + " for optimal resaults");
+			System.out.println("\nScaling down to " + optimalWidth + "x" + height + " for optimal results");
 
 			out.println("SCALE DIMENSIONS: " + optimalWidth + "x" + height);
 			this.scale(optimalWidth,height);
 		} else {
 			optimalHeight = (int) ( width/ratio );
-			System.out.println("\nScaling down to " + width + "x" + optimalHeight + " for optimal resaults");
+			System.out.println("\nScaling down to " + width + "x" + optimalHeight + " for optimal results");
 
 			out.println("SCALE DIMENSIONS: " + width + "x" + optimalHeight);
 			this.scale(width,optimalHeight);
