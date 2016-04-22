@@ -511,13 +511,15 @@ public class SeamCarver {
 
 		targetFile = new File(path);
 
-		if (imageFileName.endsWith(".png") || imageFileName.endsWith(".jpg")){
+		/*if (imageFileName.endsWith(".png") || imageFileName.endsWith(".jpg")){
 			imageFileName = imageFileName.substring(0, imageFileName.length() - 4);
 		} else if (imageFileName.endsWith(".jpeg")){
 			imageFileName = imageFileName.substring(0, imageFileName.length() - 5);
-		}
+		}*/
 
-		targetDebugFileName = imageFileName + "_" + newWidth + "x" + newHeight + ".dbg";
+		System.out.print("Enter debug file name: ");
+		targetDebugFileName = userInput.next();
+		targetDebugFileName = targetDebugFileName + "_" + newWidth + "x" + newHeight + ".dbg";
 
 		//Check if target file exists in output directory
 		if ( targetFile.exists() ){
