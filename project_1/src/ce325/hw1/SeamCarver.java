@@ -93,9 +93,12 @@ public class SeamCarver {
 
 		//Sets the seam's starting point starting from every pixel on the first row
 		for (i=0; i<importedImage.getHeight(); i++) {
+			//System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
 			minEnergy = energyMap[i][0];
 			seam[0] = i;
 			seamSum = energyMap[i][0];
+
+			//System.out.println("The i is " + i +" And the J is : 0  min energy " + minEnergy + " seam :" + seam[0]);
 
 			//Chooses the pixel with the least energy according to the Seam Carving algorithm
 			for( j=1; j<importedImage.getWidth(); j++){
@@ -111,7 +114,7 @@ public class SeamCarver {
 					}
 					flag2 = 1;
 				}
-				if ( seam[j]+1 > importedImage.getHeight()){
+				if ( seam[j]+1 > importedImage.getHeight()-1){
 					if( energyMap[seam[j-1]-1][j] < minEnergy ){
 						minEnergy = energyMap[seam[j-1]-1][j];
 						seam[j] = seam[j-1] - 1;
@@ -130,24 +133,26 @@ public class SeamCarver {
 				}
 
 				seamSum = seamSum + minEnergy;
+				//System.out.println("The i is " + i + " And the J is : " + j + " min energy " + minEnergy + " seam : " + seam[j]);
 
 			}
-
+			//System.out.println("Seam column " + j + " is " + Arrays.toString(seam) + " with energySum = "+ seamSum);
 			//Flag dictates first iteration
 			if ((seamSum < minSeamSum) && (flag == 1)) {
 				minSeamSum = seamSum;
-				minSeam = seam;
+				System.arraycopy( seam, 0, minSeam, 0, seam.length );
 			}
 
 			if (flag == 0) {
 				minSeamSum = seamSum;
-				minSeam = seam;
+				System.arraycopy( seam, 0, minSeam, 0, seam.length );
 				flag = 1;
 			}
+			//System.out.println("\nminSeam is now: " + Arrays.toString(minSeam) + " with energy = " + minSeamSum + "\n");
 		}//End of outside for loop
 
-		out.println(Arrays.toString(minSeam));
-
+		//out.println(Arrays.toString(minSeam));
+		//System.out.println(Arrays.toString(minSeam));
 		return minSeam;
 	};
 
@@ -176,7 +181,6 @@ public class SeamCarver {
 				minEnergy = energyMap[i][seam[i-1]];
 				seam[i] = seam[i-1];
 				if ( seam[i]-1 < 0 ){
-					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -184,7 +188,6 @@ public class SeamCarver {
 					flag2 = 1;
 				}
 				if ( seam[i]+1 > importedImage.getWidth()-1 ){
-					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]-1] < minEnergy ){
 						minEnergy = energyMap[i][seam[i-1] - 1];
 						seam[i] = seam[i-1] - 1;
@@ -192,7 +195,6 @@ public class SeamCarver {
 					flag2 = 1;
 				}
 				if (flag2 == 0){
-					//System.out.println("The i is " + i + " And the J is : " + j + "energyMap @  "+ i+ " is " +energyMap[i][seam[i-1]+1] + " min energy " + minEnergy);
 					if( energyMap[i][seam[i-1]+1] < minEnergy){
 						minEnergy = energyMap[i][seam[i-1] + 1];
 						seam[i] = seam[i-1] + 1;
@@ -234,15 +236,40 @@ public class SeamCarver {
 	//Remove the seam
 	public void removeHorizontalSeam(int[] seam){
 
-		int i, j, k;
+		int i, j, k, temp, temp2;
 		int[] tempPixelMap = new int[(importedImage.getWidth()*importedImage.getHeight()) - importedImage.getWidth()];
+		int[] tmpMatix = new int[importedImage.getWidth()];
 		BufferedImage reconstructedImage = new BufferedImage(importedImage.getWidth(), importedImage.getHeight()-1, BufferedImage.TYPE_INT_ARGB);
+
+		for ( i=0; i < tmpMatix.length; i++) {
+			tmpMatix[i] = i;
+		}
+		System.out.println(Arrays.toString(seam));
+		System.out.println(Arrays.toString(tmpMatix));
+		for (i = 0; i < tmpMatix.length; i++) {
+        	for (j = 1; j < (tmpMatix.length - i); j++) {
+            	if (seam[j - 1] > seam[j]) {
+                	temp = seam[j - 1];
+                	seam[j - 1] = seam[j];
+                	seam[j] = temp;
+
+					temp2 = tmpMatix[j - 1];
+					tmpMatix[j - 1] = tmpMatix[j];
+					tmpMatix[j] = temp2;
+            	}
+        	}
+    	}
+		System.out.println(Arrays.toString(seam));
+		System.out.println(Arrays.toString(tmpMatix));
+		System.out.println("    ");
+
+		//Arrays.sort(seam);
 
 		//Creates new pixelMap without copying received seam
 		j = 0;
 		k = 0;
 		for (i=0; i<pixelMap.length; i++) {
-			if(i == j*importedImage.getWidth() + seam[j] ) {
+			if(i == seam[j]*importedImage.getWidth() + tmpMatix[j] ) {
 				if( j < importedImage.getWidth() - 1){
 					j++;
 				}
@@ -253,9 +280,9 @@ public class SeamCarver {
 				}
 			}
 		}
-
+		System.out.println("\n" + Arrays.toString(pixelMap));
 		pixelMap = tempPixelMap;
-
+		System.out.println("\n" + Arrays.toString(pixelMap));
 		//Reconstructs image based on the new pixelMap
 		k = 0;
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
@@ -295,7 +322,7 @@ public class SeamCarver {
 		}
 
 		pixelMap = tempPixelMap;
-		//System.out.println("getWidth is "  + reconstructedImage.getWidth() + " getHeight " + reconstructedImage.getHeight());
+
 		//Reconstructs image based on the new pixelMap
 		k = 0;
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
@@ -309,15 +336,6 @@ public class SeamCarver {
 
 		importedImage = reconstructedImage;
 
-		//System.out.println("New getWidth is "  + importedImage.getWidth() + "New getHeight " + importedImage.getHeight());
-
-		/*
-		try{
-			File outputfile = new File("saved.png");
-			ImageIO.write(importedImage, "png", outputfile);
-		} catch(IOException e) {
-			System.out.println("Error in image creation " + e.getMessage());
-		}*/
 
 	};
 
