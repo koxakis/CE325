@@ -236,53 +236,45 @@ public class SeamCarver {
 	//Remove the seam
 	public void removeHorizontalSeam(int[] seam){
 
-		int i, j, k, temp, temp2;
+		int i, j, k;
 		int[] tempPixelMap = new int[(importedImage.getWidth()*importedImage.getHeight()) - importedImage.getWidth()];
-		int[] tmpMatix = new int[importedImage.getWidth()];
+		int[][] pixelMap2D = new int[importedImage.getHeight()][importedImage.getWidth()];
+		int[][] pixelMap2DTmp = new int[importedImage.getHeight()-1][importedImage.getWidth()];
 		BufferedImage reconstructedImage = new BufferedImage(importedImage.getWidth(), importedImage.getHeight()-1, BufferedImage.TYPE_INT_ARGB);
 
-		for ( i=0; i < tmpMatix.length; i++) {
-			tmpMatix[i] = i;
-		}
-		System.out.println(Arrays.toString(seam));
-		System.out.println(Arrays.toString(tmpMatix));
-		for (i = 0; i < tmpMatix.length; i++) {
-        	for (j = 1; j < (tmpMatix.length - i); j++) {
-            	if (seam[j - 1] > seam[j]) {
-                	temp = seam[j - 1];
-                	seam[j - 1] = seam[j];
-                	seam[j] = temp;
-
-					temp2 = tmpMatix[j - 1];
-					tmpMatix[j - 1] = tmpMatix[j];
-					tmpMatix[j] = temp2;
-            	}
+		k=0;
+		for (i = 0; i < importedImage.getHeight(); i++) {
+        	for (j = 0; j < importedImage.getWidth(); j++) {
+            	pixelMap2D[i][j] = pixelMap[k];
+				k++;
         	}
     	}
-		System.out.println(Arrays.toString(seam));
-		System.out.println(Arrays.toString(tmpMatix));
-		System.out.println("    ");
-
-		//Arrays.sort(seam);
 
 		//Creates new pixelMap without copying received seam
-		j = 0;
+
 		k = 0;
-		for (i=0; i<pixelMap.length; i++) {
-			if(i == seam[j]*importedImage.getWidth() + tmpMatix[j] ) {
-				if( j < importedImage.getWidth() - 1){
-					j++;
-				}
-			} else {
-				tempPixelMap[k] = pixelMap[i];
-				if( k < tempPixelMap.length - 1){
+		for (i = 0; i < importedImage.getHeight()-1; i++) {
+			for (j = 0; j < importedImage.getWidth(); j++) {
+				if (i == seam[k]){
 					k++;
+					continue;
+				}else{
+					pixelMap2DTmp[i][j] = pixelMap2D[i][j];
 				}
 			}
 		}
-		System.out.println("\n" + Arrays.toString(pixelMap));
+
+		k = 0;
+		for (i = 0; i < importedImage.getHeight(); i++) {
+        	for (j = 0; j < importedImage.getWidth(); j++) {
+				tempPixelMap[k] = pixelMap2DTmp[i][j];
+				k++;
+        	}
+    	}
+
+
 		pixelMap = tempPixelMap;
-		System.out.println("\n" + Arrays.toString(pixelMap));
+
 		//Reconstructs image based on the new pixelMap
 		k = 0;
 		for (i=0; i<reconstructedImage.getHeight(); i++) {
