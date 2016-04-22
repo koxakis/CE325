@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class SeamCarver {
 
 	public static BufferedImage importedImage;
-	public int[] pixelMap;
+	public int[] pixelMap;   //In our program we use an 1D array to represent pixel which may need conversion in order to gain access to pixel data
 	public double[][] energyMap;
 	public static File targetDebugFile;
 	public static PrintWriter out;
@@ -510,12 +510,6 @@ public class SeamCarver {
 
 
 		targetFile = new File(path);
-
-		/*if (imageFileName.endsWith(".png") || imageFileName.endsWith(".jpg")){
-			imageFileName = imageFileName.substring(0, imageFileName.length() - 4);
-		} else if (imageFileName.endsWith(".jpeg")){
-			imageFileName = imageFileName.substring(0, imageFileName.length() - 5);
-		}*/
 
 		System.out.print("Enter debug file name: ");
 		targetDebugFileName = userInput.next();
