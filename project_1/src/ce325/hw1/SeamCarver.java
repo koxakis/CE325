@@ -93,12 +93,10 @@ public class SeamCarver {
 
 		//Sets the seam's starting point starting from every pixel on the first row
 		for (i=0; i<importedImage.getHeight(); i++) {
-			//System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
+
 			minEnergy = energyMap[i][0];
 			seam[0] = i;
 			seamSum = energyMap[i][0];
-
-			//System.out.println("The i is " + i +" And the J is : 0  min energy " + minEnergy + " seam :" + seam[0]);
 
 			//Chooses the pixel with the least energy according to the Seam Carving algorithm
 			for( j=1; j<importedImage.getWidth(); j++){
@@ -133,10 +131,9 @@ public class SeamCarver {
 				}
 
 				seamSum = seamSum + minEnergy;
-				//System.out.println("The i is " + i + " And the J is : " + j + " min energy " + minEnergy + " seam : " + seam[j]);
 
 			}
-			//System.out.println("Seam column " + j + " is " + Arrays.toString(seam) + " with energySum = "+ seamSum);
+
 			//Flag dictates first iteration
 			if ((seamSum < minSeamSum) && (flag == 1)) {
 				minSeamSum = seamSum;
@@ -148,11 +145,11 @@ public class SeamCarver {
 				System.arraycopy( seam, 0, minSeam, 0, seam.length );
 				flag = 1;
 			}
-			//System.out.println("\nminSeam is now: " + Arrays.toString(minSeam) + " with energy = " + minSeamSum + "\n");
+
 		}//End of outside for loop
 
-		//out.println(Arrays.toString(minSeam));
-		//System.out.println(Arrays.toString(minSeam));
+		out.println(Arrays.toString(minSeam));
+
 		return minSeam;
 	};
 
@@ -166,16 +163,14 @@ public class SeamCarver {
 		//Sets the seam's starting point starting from every pixel on the first row
 
 		for (j=0; j<importedImage.getWidth(); j++) {
-			//System.out.println("getWidth is "  + importedImage.getWidth() + " getHeight " + importedImage.getHeight());
+
 			minEnergy = energyMap[0][j];
 			seam[0] = j;
 			seamSum = energyMap[0][j];
 
-			//System.out.println("The i is 0 And the J is : " + j + " min energy " + minEnergy + " seam :" + seam[0]);
-
 			//Chooses the pixel with the least energy according to the Seam Carving algorithm
 			for( i=1; i<importedImage.getHeight(); i++){
-				//out.print(minSeam[i]);
+
 				//Flag2 dictates if the pixel is located to either end of the energy matrix
 				flag2 = 0;
 				minEnergy = energyMap[i][seam[i-1]];
@@ -204,13 +199,10 @@ public class SeamCarver {
 						seam[i] = seam[i-1] - 1;
 					}
 				}
-				//System.out.println("The i is " + i + " And the J is : " + j + " min energy " + minEnergy + " seam :" + seam[i]);
 
 				seamSum = seamSum + minEnergy;
 
 			}
-
-			//System.out.println("Seam column " + j + " is " + Arrays.toString(seam) + " with energySum = "+ seamSum);
 
 			//Flag dictates first iteration
 			if ((seamSum < minSeamSum) && (flag == 1)) {
@@ -224,11 +216,9 @@ public class SeamCarver {
 				flag = 1;
 			}
 
-			//System.out.println("\nminSeam is now: " + Arrays.toString(minSeam) + " with energy = " + minSeamSum + "\n");
 		}//End of outside for loop
 
-
-		//System.out.println(Arrays.toString(minSeam));
+		out.println(Arrays.toString(minSeam));
 
 		return minSeam;
 	};
