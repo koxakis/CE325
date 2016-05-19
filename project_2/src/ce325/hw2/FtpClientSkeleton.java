@@ -1,31 +1,31 @@
 package ce325.hw2;
 
-import java.util.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
-public class FtpClientSkeleton {  
+public class FtpClientSkeleton {
   Socket controlSocket;
   BufferedReader reader;
   PrintWriter out;
-  BufferedReader in;  
+  BufferedReader in;
   File workingDir;
-  
+
   static boolean DEBUG = false;
-  
+
   enum DBG {IN, OUT};
-  
+
   void dbg(DBG direction, String msg) {
     if(DEBUG) {
       if(direction == DBG.IN)
-        System.err.println("<- "+msg); 
+        System.err.println("<- "+msg);
       else if(direction == DBG.OUT)
-        System.err.println("-> "+msg); 
+        System.err.println("-> "+msg);
       else
         System.err.println(msg);
     }
   }
-  
+
   public FtpClientSkeleton(boolean pasv, boolean overwrite) {
     reader = new BufferedReader( new InputStreamReader(System.in) );
     workingDir = new File(".");
@@ -35,8 +35,8 @@ public class FtpClientSkeleton {
     String inetAddress;
     int port=0;
 
-    try {  
-    
+    try {
+
       if( args!=null && args.length > 0 ) {
         inetAddress = args[0];
       }
@@ -44,7 +44,7 @@ public class FtpClientSkeleton {
         System.out.print("Hostname: ");
         inetAddress = reader.readLine();
       }
-      
+
       if( args!=null && args.length > 1 ) {
         port = new Integer( args[1] ).intValue();;
       }
@@ -62,40 +62,40 @@ public class FtpClientSkeleton {
       System.exit(-1);
     }
   }
-  
+
   public boolean bind(String inetAddress, int port) {
-    
+
   }
-  
-  public void loginUI() {    
+
+  public void loginUI() {
     String username, passwd;
     String socketInput;
-    
+
     try {
       System.out.print("Login Username: ");
       username = reader.readLine();
       System.out.print("Login Password: ");
       passwd = reader.readLine();
-      
-      if( login(username, passwd) ) 
+
+      if( login(username, passwd) )
         System.out.println("Login for user \""+username+"\" OK!");
-      else 
+      else
         System.out.println("Login for user \""+username+"\"Failed!");
-      
+
     } catch(IOException ex) {
       ex.printStackTrace();
-    }    
+    }
   }
-  
+
   public boolean login(String username, String passwd) {
-    
-  }  
-  
+
+  }
+
   public void listUI() {
     try {
       System.out.print("Enter path to list (or . for the current directory): ");
       String path = reader.readLine();
-      String info = list(path);      
+      String info = list(path);
       List<RemoteFileInfo> list = parse(info);
       for(RemoteFileInfo listinfo : list)
         System.out.println(listinfo);
@@ -104,11 +104,11 @@ public class FtpClientSkeleton {
       System.exit(-1);
     }
   }
-  
+
   public String list(String path) {
-    
+
   }
-  
+
   class RemoteFileInfo {
     boolean dir = false; // is directory
     boolean ur = false;  // user read permission
@@ -123,21 +123,21 @@ public class FtpClientSkeleton {
     long size;           // file size
     String name;
     String parentDir;
-    
+
     public RemoteFileInfo(String line) {
     }
-    
+
     private void permissions(String perms) {
     }
-    
-    public String toString() {      
+
+    public String toString() {
     }
   }
-  
+
   public List<RemoteFileInfo> parse(String info) {
-    
+
   }
-  
+
   public void uploadUI() {
     try {
       System.out.print("Enter file to upload: ");
@@ -149,13 +149,13 @@ public class FtpClientSkeleton {
       System.exit(-1);
     }
   }
-  
-  /** 
+
+  /**
    * Upload multiple files
    * @param f can be either a local filename or local directory
    */
   public void mupload(File f) {
-    
+
   }
 
   public void downloadUI() {
@@ -163,7 +163,7 @@ public class FtpClientSkeleton {
       System.out.print("Enter file to download: ");
       String filename = reader.readLine();
       File file = new File(filename);                // we have an absolute path
-      
+
       if( file.exists() && !file.isDirectory()) {
         System.out.println("File \""+file.getPath()+"\" already exist.");
         String yesno;
@@ -174,47 +174,47 @@ public class FtpClientSkeleton {
         if( yesno.startsWith("n") )
           return;
       }
-      
-      
-      
+
+
+
     } catch(IOException ex) {
       ex.printStackTrace();
       System.exit(-1);
     }
   }
-  
-  /** 
+
+  /**
    * Download multiple files
    * @param entry can be either a filename or directory
    */
   public boolean mdownload(RemoteFileInfo entry) {
-    
+
   }
-  
+
   /**
-   * Return values: 
+   * Return values:
    *  0: success
    * -1: File exists and cannot overwritten
    * -2: download failure
    */
   public int download(RemoteFileInfo entry) {
-    
-  }
-  
 
-  
-  
-  
-  public boolean mkdir(String dirname) {
-    
   }
-  
+
+
+
+
+
+  public boolean mkdir(String dirname) {
+
+  }
+
   public void mkdirUI() {
     String dirname, socketInput;
     try {
       System.out.print("Enter directory name: ");
       dirname = reader.readLine();
-      
+
       if( mkdir(dirname) )
         System.out.println("Directory \""+ dirname +"\" created!" );
       else
@@ -223,17 +223,17 @@ public class FtpClientSkeleton {
       ex.printStackTrace();
     }
   }
-  
+
   public boolean rmdir(String dirname) {
-    
+
   }
-  
+
   public void rmdirUI() {
     String dirname, socketInput;
     try {
       System.out.print("Enter directory name: ");
       dirname = reader.readLine();
-      
+
       if( rmdir(dirname) )
         System.out.println("Directory \""+ dirname +"\" deleted!" );
       else
@@ -244,22 +244,22 @@ public class FtpClientSkeleton {
   }
 
   public boolean cwd(String dirname) {
-    
+
   }
-  
+
   public void deleteUI() {
     String filename, socketInput;
     try {
       System.out.print("Enter file to delete: ");
       filename = reader.readLine();
       File file = new File(filename);
-      
+
       List<RemoteFileInfo> list = parse( list(filename) );
       if( list.size() > 1 || list.size()==0 || !list.get(0).name.equals(filename) ) {
         File filepath = file.getParentFile() != null ? file.getParentFile() : new File(".");
         list = parse( list( filepath.getPath() ) );
         boolean found = false, deleted = false;
-        for(RemoteFileInfo entry : list) 
+        for(RemoteFileInfo entry : list)
           if( entry.name.equals(filename) ) {
             found = true;
             if( mdelete( entry ) ) {
@@ -270,9 +270,9 @@ public class FtpClientSkeleton {
             System.out.println("Filename \""+filename+"\" deleted successfully");
           else if( !found )
             System.out.println("Unable to find \""+filename+"\"");
-          else if( !deleted ) 
+          else if( !deleted )
             System.out.println("Failed to delete \""+filename+"\"");
-          
+
       }
       else if( list.size() == 1 ) {
         for(RemoteFileInfo entry : list) {
@@ -283,12 +283,12 @@ public class FtpClientSkeleton {
           System.out.println("Filename \""+entry.name+"\" deleted successfully");
         }
       }
-      
+
     } catch(IOException ex) {
       ex.printStackTrace();
     }
   }
-  
+
   /* Delete multiple files in case entry is a directory
    */
   public boolean mdelete(RemoteFileInfo entry) {
@@ -313,19 +313,19 @@ public class FtpClientSkeleton {
       return true;
     }
   }
-  
+
   public boolean delete(String filename) {
-    
+
   }
-  
-  
+
+
   public void cwdUI() {
     String dirname, socketInput;
     try {
       System.out.print("Enter directory name: ");
       dirname = reader.readLine();
       dbg(null, "Read: "+dirname);
-      
+
       if( cwd(dirname) )
         System.out.println("Directory changed successfully!");
       else
@@ -334,24 +334,24 @@ public class FtpClientSkeleton {
       ex.printStackTrace();
     }
   }
-  
+
   public void pwdUI() {
     String dirname, socketInput;
     String pwdInfo = pwd();
     System.out.println("PWD: "+pwdInfo);
   }
-  
+
   public String pwd() {
-    
+
   }
-  
+
   public void renameUI() {
     try {
       System.out.print("Enter file or directory to rename: ");
       String from = reader.readLine();
       System.out.print("Enter new name: ");
       String to = reader.readLine();
-      
+
       if( rename(from, to) )
         System.out.println("Rename successfull");
       else
@@ -361,15 +361,15 @@ public class FtpClientSkeleton {
       return;
     }
   }
-  
+
   public boolean rename(String from, String to) {
-    
+
   }
-  
+
   public void helpUI() {
     System.out.println("OPTIONS:\n\tLOGIN\tQUIT\tLIST\tUPLOAD\tDOWNLOAD\n\tMKD\tRMD\tCWD\tPWD\tDEL");
   }
-  
+
   public void checkInput(String command) {
     switch(command.toUpperCase()) {
     case "HELP" :
@@ -423,7 +423,7 @@ public class FtpClientSkeleton {
       System.out.println("ERROR: Unknown command \""+command+"\"");
     }
   }
-  
+
   public static void main(String [] args) {
     FtpClient client = new FtpClient(true, true);
     client.bindUI(args);
@@ -432,7 +432,7 @@ public class FtpClientSkeleton {
     try {
       String userInput;
       while( true ) {
-        if( client.reader.ready() ) {        
+        if( client.reader.ready() ) {
           userInput = client.reader.readLine();
           while( userInput.indexOf(' ') == 0 ) {
             userInput = userInput.substring(1);
@@ -454,5 +454,5 @@ public class FtpClientSkeleton {
       ex.printStackTrace();
     }
   }
-  
+
 }
