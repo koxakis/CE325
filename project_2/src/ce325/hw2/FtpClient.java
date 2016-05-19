@@ -57,7 +57,7 @@ public class FtpClient {
 				System.out.println("Socket bind OK!");
 			}else
 			System.out.println("Socket bind FAILED!");
-			
+
 		} catch( IOException ex) {
 			ex.printStackTrace();
 			System.exit(-1);
@@ -67,6 +67,12 @@ public class FtpClient {
 	public boolean bind(String inetAddress, int port) {
 		try {
 			controlSocket = new Socket(inetAddress, port);
+			out = new PrintWriter(controlSocket.getOutputStream(), true);
+			in = new BufferedReader( new InputStreamReader(controlSocket.getInputStream() ));
+			reader = new BufferedReader( new InputStreamReader(System.in));
+
+			System.out.println("Socket said " + in.readLine());
+			//controlSocket.connect(inetAddress, port);
 			return true;
 		}catch(UnknownHostException ex){
 			System.err.println("Don't know about host " + inetAddress);
@@ -99,7 +105,15 @@ public class FtpClient {
 	}
 
 	public boolean login(String username, String passwd) {
-		return false;
+		try{
+			out.println("USER " + username);
+			System.out.println("Socket said " + in.readLine());
+			out.println("PASS " + passwd);
+			System.out.println("Socket said " + in.readLine());
+			return true;
+		}catch(Exception ex3){
+			return false;
+		}
 	}
 
 	public void listUI() {
