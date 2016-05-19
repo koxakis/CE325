@@ -53,15 +53,11 @@ public class FtpClient {
 				port = new Integer( reader.readLine() ).intValue();
 			}
 
-			//Insert code to make the bind to server
-
-			controlSocket = new Socket(inetAddress, port);
-
 			if( bind(inetAddress, port) ) {
 				System.out.println("Socket bind OK!");
-			}
-			else
+			}else
 			System.out.println("Socket bind FAILED!");
+			
 		} catch( IOException ex) {
 			ex.printStackTrace();
 			System.exit(-1);
@@ -69,7 +65,17 @@ public class FtpClient {
 	}
 
 	public boolean bind(String inetAddress, int port) {
-		return false;
+		try {
+			controlSocket = new Socket(inetAddress, port);
+			return true;
+		}catch(UnknownHostException ex){
+			System.err.println("Don't know about host " + inetAddress);
+			return false;
+		}catch(IOException ex2){
+			System.err.println("Couldn't get I/O for the connection to " + inetAddress);
+			return false;
+		}
+
 	}
 
 	public void loginUI() {
