@@ -70,7 +70,7 @@ public class FtpClient {
 			out = new PrintWriter(controlSocket.getOutputStream(), true);
 			in = new BufferedReader( new InputStreamReader(controlSocket.getInputStream() ));
 
-			System.out.println("Socket said " + in.readLine());
+			//System.out.println("Socket said " + in.readLine());
 			return true;
 		}catch(UnknownHostException ex){
 			System.err.println("Don't know about host " + inetAddress);
@@ -102,15 +102,17 @@ public class FtpClient {
 		}
 	}
 
-// fix incorect login showong as OK
 	public boolean login(String username, String passwd) {
 		try{
 			out.println("USER " + username);
-			System.out.println("Socket said " + in.readLine());
 			out.println("PASS " + passwd);
-			System.out.println("Socket said " + in.readLine());
+
+			if (in.readLine().equals("530 Login incorrect.")){
+				return false;
+			}
 			return true;
 		}catch(Exception ex3){
+			System.out.println(ex3.getMessage());
 			return false;
 		}
 	}
