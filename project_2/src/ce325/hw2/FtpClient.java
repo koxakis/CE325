@@ -18,11 +18,11 @@ public class FtpClient {
 	void dbg(DBG direction, String msg) {
 		if(DEBUG) {
 			if(direction == DBG.IN)
-			System.err.println("<- "+msg);
+				System.err.println("<- "+msg);
 			else if(direction == DBG.OUT)
-			System.err.println("-> "+msg);
+				System.err.println("-> "+msg);
 			else
-			System.err.println(msg);
+				System.err.println(msg);
 		}
 	}
 
@@ -106,7 +106,8 @@ public class FtpClient {
 		try{
 			out.println("USER " + username);
 			out.println("PASS " + passwd);
-
+			in.readLine();
+			in.readLine();
 			if (in.readLine().equals("530 Login incorrect.")){
 				return false;
 			}
@@ -122,9 +123,11 @@ public class FtpClient {
 			System.out.print("Enter path to list (or . for the current directory): ");
 			String path = reader.readLine();
 			String info = list(path);
+
 			List<RemoteFileInfo> list = parse(info);
 			for(RemoteFileInfo listinfo : list)
-			System.out.println(listinfo);
+				System.out.println(listinfo);
+
 		} catch(IOException ex) {
 			ex.printStackTrace();
 			System.exit(-1);
@@ -270,9 +273,7 @@ public class FtpClient {
 		}
 	}
 
-	public boolean cwd(String dirname) {
-		return false;
-	}
+
 
 	public void deleteUI() {
 		String filename, socketInput;
@@ -354,12 +355,26 @@ public class FtpClient {
 			dbg(null, "Read: "+dirname);
 
 			if( cwd(dirname) )
-			System.out.println("Directory changed successfully!");
+				System.out.println("Directory changed successfully!");
 			else
-			System.out.println("Directory change failed!");
+				System.out.println("Directory change failed!");
 		} catch(IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public boolean cwd(String dirname) {
+		out.println("CWD " + dirname);
+		try{
+			if (in.readLine().equals("250 Directory successfully changed.")){
+				return true;
+			}
+
+		}catch(IOException ex5){
+			System.out.println(ex5.getMessage());
+			return false;
+		}
+		return false;
 	}
 
 	public void pwdUI() {
@@ -369,7 +384,13 @@ public class FtpClient {
 	}
 
 	public String pwd() {
-		return "a";
+		out.println("PWD");
+		try{
+			return in.readLine().substring(4);
+		}catch(IOException ex4){
+			return("Directory failed to be read " + ex4.getMessage());
+		}
+
 	}
 
 	public void renameUI() {
