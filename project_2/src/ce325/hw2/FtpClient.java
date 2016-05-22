@@ -3,6 +3,7 @@ package ce325.hw2;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class FtpClient {
 	Socket controlSocket;
@@ -10,6 +11,9 @@ public class FtpClient {
 	PrintWriter out;
 	BufferedReader in;
 	File workingDir;
+	Thread threadS;
+
+	ReentrantLock lock = new ReentrantLock();
 
 	static boolean DEBUG = false;
 
@@ -134,7 +138,80 @@ public class FtpClient {
 		}
 	}
 
+	String info;
+
+	class threadSocket extends Thread {
+
+		Socket dataSocket;
+		BufferedReader serverIn;
+
+		public threadSocket (String hostIp, int hostPort) {
+			try {
+
+				dataSocket = new Socket(hostIp, hostPort);
+				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
+			}catch(UnknownHostException ex){
+
+				System.err.println("Don't know about host " + hostIp);
+			}catch(IOException ex2){
+
+				System.err.println("Couldn't get I/O for the connection to " + hostIp);
+			}
+		}
+
+		public void run() {
+
+			lock.lock();
+
+			try{
+				info = serverIn.readLine();
+			}catch(IOException ex6){
+				System.out.println(ex6.getMessage());
+			}
+
+			lock.unlock();
+		}
+
+	}
+
 	public String list(String path) {
+		String pasvModeData;
+		String hostIp, hexMSB, hexLSB;
+		int portMSB, portLSB;
+		int hostPort;
+
+		out.println("PASV");
+		try{
+			pasvModeData = in.readLine().substring(27);
+		}catch(IOException ex6){
+			System.out.println(ex6.getMessage());
+			return "error";
+		}
+		pasvModeData = pasvModeData.substring(0, pasvModeData.length() - 2);
+		String[] tokens = pasvModeData.split(",");
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
+
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
+
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+
+		threadS = new threadSocket(hostIp, hostPort);
+		threadS.start();
+
+		out.println("LIST " + path);
+		try{
+			threadS.join();
+		}catch(InterruptedException ex7){
+			System.out.println(ex7.getMessage());
+			return "error";
+		}
+
+		System.out.println(info);
+
 		return "a";
 	}
 
