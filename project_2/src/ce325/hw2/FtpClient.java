@@ -111,7 +111,11 @@ public class FtpClient {
 			out.println("USER " + username);
 			out.println("PASS " + passwd);
 			in.readLine();
-			in.readLine();
+
+			if (in.readLine().equals("230 Login successful.")){
+				return true;
+			}
+
 			if (in.readLine().equals("530 Login incorrect.")){
 				return false;
 			}
@@ -138,19 +142,17 @@ public class FtpClient {
 		}
 	}
 
-	//String info;
 
 	class threadSocket extends Thread {
 
 		Socket dataSocket;
 		BufferedReader serverIn;
-		StringBuilder infoBuilder = new StringBuilder();
+		StringBuilder info;
 		String temp;
-		String info;
 
-		public threadSocket (String hostIp, int hostPort) {
+		public threadSocket (String hostIp, int hostPort, StringBuilder arg_info) {
 			try {
-
+				this.info = arg_info;
 				dataSocket = new Socket(hostIp, hostPort);
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 			}catch(UnknownHostException ex){
@@ -165,19 +167,16 @@ public class FtpClient {
 		public void run() {
 
 			lock.lock();
-
 			try{
 				while(( temp = serverIn.readLine()) != null){
 
-					infoBuilder.append(temp);
-					infoBuilder.append("\n");
+					info.append(temp);
+					info.append("\n");
 				}
-				info = infoBuilder.toString();
 
 			}catch(IOException ex6){
 				System.out.println(ex6.getMessage());
 			}
-
 			lock.unlock();
 		}
 
@@ -186,6 +185,7 @@ public class FtpClient {
 	public String list(String path) {
 		String pasvModeData;
 		String hostIp, hexMSB, hexLSB;
+		StringBuilder info = new StringBuilder();
 		int portMSB, portLSB;
 		int hostPort;
 
@@ -208,7 +208,7 @@ public class FtpClient {
 
 		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
 
-		threadS = new threadSocket(hostIp, hostPort);
+		threadS = new threadSocket(hostIp, hostPort, info);
 		threadS.start();
 
 		out.println("LIST " + path);
@@ -219,9 +219,7 @@ public class FtpClient {
 			return "error";
 		}
 
-		System.out.println(info);
-
-		return "a";
+		return info.toString();
 	}
 
 	class RemoteFileInfo {
@@ -240,18 +238,36 @@ public class FtpClient {
 		String parentDir;
 
 		public RemoteFileInfo(String line) {
+			//line parsing
+			String[] tokens = line.split("\\t");
+			for(String strLine : tokens){
+				System.out.println(strLine);
+			}
+
 		}
 
 		private void permissions(String perms) {
+			//a banch of ifs
 		}
 
 		public String toString() {
-			return "a";
+			//print
+			return "All work and no play makes Jacj a dull boy";
 		}
 	}
 
 	public List<RemoteFileInfo> parse(String info) {
-		return null ;
+
+		List<RemoteFileInfo> list = new LinkedList<RemoteFileInfo>();
+		String[] tokens = info.split("\\n");
+
+		for(String strLine : tokens){
+
+			RemoteFileInfo data = new RemoteFileInfo(strLine);
+			list.add(data);
+		}
+
+		return list ;
 	}
 
 	public void uploadUI() {
