@@ -138,12 +138,15 @@ public class FtpClient {
 		}
 	}
 
-	String info;
+	//String info;
 
 	class threadSocket extends Thread {
 
 		Socket dataSocket;
 		BufferedReader serverIn;
+		StringBuilder infoBuilder = new StringBuilder();
+		String temp;
+		String info;
 
 		public threadSocket (String hostIp, int hostPort) {
 			try {
@@ -164,7 +167,13 @@ public class FtpClient {
 			lock.lock();
 
 			try{
-				info = serverIn.readLine();
+				while(( temp = serverIn.readLine()) != null){
+
+					infoBuilder.append(temp);
+					infoBuilder.append("\n");
+				}
+				info = infoBuilder.toString();
+
 			}catch(IOException ex6){
 				System.out.println(ex6.getMessage());
 			}
