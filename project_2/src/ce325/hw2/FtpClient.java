@@ -74,7 +74,6 @@ public class FtpClient {
 			out = new PrintWriter(controlSocket.getOutputStream(), true);
 			in = new BufferedReader( new InputStreamReader(controlSocket.getInputStream() ));
 
-			//System.out.println("Socket said " + in.readLine());
 			return true;
 		}catch(UnknownHostException ex){
 			System.err.println("Don't know about host " + inetAddress);
@@ -112,11 +111,11 @@ public class FtpClient {
 			out.println("PASS " + passwd);
 			in.readLine();
 
-			if (in.readLine().equals("230 Login successful.")){
+			if (in.readLine().startsWith("230")){
 				return true;
 			}
 
-			if (in.readLine().equals("530 Login incorrect.")){
+			if (in.readLine().startsWith("530")){
 				return false;
 			}
 			return true;
@@ -132,9 +131,14 @@ public class FtpClient {
 			String path = reader.readLine();
 			String info = list(path);
 
-			List<RemoteFileInfo> list = parse(info);
-			for(RemoteFileInfo listinfo : list)
-				System.out.println(listinfo);
+			if (info != null && !info.isEmpty()){
+				List<RemoteFileInfo> list = parse(info);
+				for(RemoteFileInfo listinfo : list)
+					System.out.println(listinfo);
+
+			}else{
+				System.out.println("This directory is empty or not found.");
+			}
 
 		} catch(IOException ex) {
 			ex.printStackTrace();
@@ -218,6 +222,14 @@ public class FtpClient {
 			System.out.println(ex7.getMessage());
 			return "error";
 		}
+		try{
+			System.out.println(in.readLine());
+			System.out.println(in.readLine());
+		}catch(IOException ex8){
+			System.out.println(ex8.getMessage());
+			return "error";
+		}
+
 
 		return info.toString();
 	}
@@ -238,21 +250,79 @@ public class FtpClient {
 		String parentDir;
 
 		public RemoteFileInfo(String line) {
-			//line parsing
-			String[] tokens = line.split("\\t");
-			for(String strLine : tokens){
-				System.out.println(strLine);
+
+			int i = 8;
+
+			String[] tokens = line.split("\\s+");
+
+			this.permissions(tokens[0]);
+
+			size = Long.parseLong(tokens[4]);
+
+			name = tokens[i];
+			while(i + 1 < tokens.length) {
+				i++;
+				name = name + " " + tokens[i];
 			}
 
 		}
 
 		private void permissions(String perms) {
-			//a banch of ifs
+
+			if (perms.charAt(0) == 'd') dir = true;
+
+			if (perms.charAt(1) == 'r') ur = true;
+			if (perms.charAt(2) == 'w') uw = true;
+			if (perms.charAt(3) == 'x') ux = true;
+
+			if (perms.charAt(4) == 'r') gr = true;
+			if (perms.charAt(5) == 'w') gw = true;
+			if (perms.charAt(6) == 'x') gx = true;
+
+			if (perms.charAt(7) == 'r') or = true;
+			if (perms.charAt(8) == 'w') ow = true;
+			if (perms.charAt(9) == 'x') ox = true;
 		}
 
 		public String toString() {
-			//print
-			return "All work and no play makes Jacj a dull boy";
+
+			String stringToPrint;
+
+			stringToPrint = "-> \"" + name + "\"";
+
+			if (dir) stringToPrint = stringToPrint + " is a directory";
+			else stringToPrint = stringToPrint + " is a file";
+
+			stringToPrint = stringToPrint + " of size " + size + " bytes\n    Permissions [ User: ";
+
+			if (ur) stringToPrint = stringToPrint + "r";
+			else stringToPrint = stringToPrint + "-";
+			if (uw) stringToPrint = stringToPrint + "w";
+			else stringToPrint = stringToPrint + "-";
+			if (ux) stringToPrint = stringToPrint + "x";
+			else stringToPrint = stringToPrint + "-";
+
+			stringToPrint = stringToPrint + " | Group: ";
+
+			if (gr) stringToPrint = stringToPrint + "r";
+			else stringToPrint = stringToPrint + "-";
+			if (gw) stringToPrint = stringToPrint + "w";
+			else stringToPrint = stringToPrint + "-";
+			if (gx) stringToPrint = stringToPrint + "x";
+			else stringToPrint = stringToPrint + "-";
+
+			stringToPrint = stringToPrint + " | Other: ";
+
+			if (or) stringToPrint = stringToPrint + "r";
+			else stringToPrint = stringToPrint + "-";
+			if (ow) stringToPrint = stringToPrint + "w";
+			else stringToPrint = stringToPrint + "-";
+			if (ox) stringToPrint = stringToPrint + "x";
+			else stringToPrint = stringToPrint + "-";
+
+			stringToPrint = stringToPrint + " ]";
+
+			return stringToPrint;
 		}
 	}
 
@@ -334,11 +404,20 @@ public class FtpClient {
 	}
 
 
-
-
-
 	public boolean mkdir(String dirname) {
-		return false;
+		out.println("MKD " + dirname);
+		try{
+			if (in.readLine().startsWith("257")){
+				return true;
+			}else{
+				return false;
+			}
+
+		}catch(IOException ex11){
+			System.out.println(ex11.getMessage());
+			return false;
+		}
+
 	}
 
 	public void mkdirUI() {
@@ -357,7 +436,18 @@ public class FtpClient {
 	}
 
 	public boolean rmdir(String dirname) {
-		return false;
+		out.println("RMD " + dirname);
+		try{
+			if (in.readLine().startsWith("250")){
+				return true;
+			}else{
+				return false;
+			}
+
+		}catch(IOException ex11){
+			System.out.println(ex11.getMessage());
+			return false;
+		}
 	}
 
 	public void rmdirUI() {
@@ -390,18 +480,18 @@ public class FtpClient {
 				list = parse( list( filepath.getPath() ) );
 				boolean found = false, deleted = false;
 				for(RemoteFileInfo entry : list)
-				if( entry.name.equals(filename) ) {
-					found = true;
-					if( mdelete( entry ) ) {
-						deleted = true;
+					if( entry.name.equals(filename) ) {
+						found = true;
+						if( mdelete( entry ) ) {
+							deleted = true;
+						}
 					}
-				}
 				if(found && deleted)
-				System.out.println("Filename \""+filename+"\" deleted successfully");
+					System.out.println("Filename \""+filename+"\" deleted successfully");
 				else if( !found )
-				System.out.println("Unable to find \""+filename+"\"");
+					System.out.println("Unable to find \""+filename+"\"");
 				else if( !deleted )
-				System.out.println("Failed to delete \""+filename+"\"");
+					System.out.println("Failed to delete \""+filename+"\"");
 
 			}
 			else if( list.size() == 1 ) {
@@ -426,6 +516,7 @@ public class FtpClient {
 			cwd( entry.name );
 			List<RemoteFileInfo> list = parse( list(".") );
 			for(RemoteFileInfo listentry : list) {
+				
 				mdelete(listentry);
 			}
 			cwd("..");
@@ -445,7 +536,20 @@ public class FtpClient {
 	}
 
 	public boolean delete(String filename) {
-		return false;
+
+		out.println("DELE " + filename);
+		try{
+			if (in.readLine().startsWith("250")){
+				return true;
+			}else{
+				return false;
+			}
+
+		}catch(IOException ex10){
+			System.out.println(ex10.getMessage());
+			return false;
+		}
+
 	}
 
 
@@ -468,7 +572,7 @@ public class FtpClient {
 	public boolean cwd(String dirname) {
 		out.println("CWD " + dirname);
 		try{
-			if (in.readLine().equals("250 Directory successfully changed.")){
+			if (in.readLine().startsWith("250")){
 				return true;
 			}
 
@@ -513,11 +617,28 @@ public class FtpClient {
 	}
 
 	public boolean rename(String from, String to) {
-		return false;
+
+		out.println("RNFR " + from);
+		try{
+			if (in.readLine().startsWith("350")){
+				out.println("RNTO " + to);
+				if (in.readLine().startsWith("503")){
+					return false;
+				}
+				return true;
+			}else{
+				return false;
+			}
+
+		}catch(IOException ex9){
+			System.out.println(ex9.getMessage());
+			return false;
+		}
+
 	}
 
 	public void helpUI() {
-		System.out.println("OPTIONS:\n\tLOGIN\tQUIT\tLIST\tUPLOAD\tDOWNLOAD\n\tMKD\tRMD\tCWD\tPWD\tDEL");
+		System.out.println("OPTIONS:\n\tRNM\tLOGIN\tQUIT\tLIST\tUPLOAD\tDOWNLOAD\n\tMKD\tRMD\tCWD\tPWD\tDEL");
 	}
 
 	public void checkInput(String command) {
