@@ -223,8 +223,12 @@ public class FtpClient {
 			return "error";
 		}
 		try{
+			/*System.out.println(in.readLine());
 			System.out.println(in.readLine());
-			System.out.println(in.readLine());
+			Borat
+			*/
+			in.readLine();
+			in.readLine();
 		}catch(IOException ex8){
 			System.out.println(ex8.getMessage());
 			return "error";
@@ -331,10 +335,12 @@ public class FtpClient {
 		List<RemoteFileInfo> list = new LinkedList<RemoteFileInfo>();
 		String[] tokens = info.split("\\n");
 
-		for(String strLine : tokens){
+		if (info != null && !info.isEmpty()){
+			for(String strLine : tokens){
 
-			RemoteFileInfo data = new RemoteFileInfo(strLine);
-			list.add(data);
+				RemoteFileInfo data = new RemoteFileInfo(strLine);
+				list.add(data);
+			}
 		}
 
 		return list ;
@@ -377,7 +383,11 @@ public class FtpClient {
 				return;
 			}
 
-
+			if (mdownload( )){
+				System.out.println("Download success");
+			}else{
+				System.out.println("Download falid");
+			}
 
 		} catch(IOException ex) {
 			ex.printStackTrace();
@@ -516,7 +526,7 @@ public class FtpClient {
 			cwd( entry.name );
 			List<RemoteFileInfo> list = parse( list(".") );
 			for(RemoteFileInfo listentry : list) {
-				
+
 				mdelete(listentry);
 			}
 			cwd("..");
@@ -686,6 +696,7 @@ public class FtpClient {
 			case "RNM":
 				renameUI();
 			break;
+			case "Q":
 			case "QUIT" :
 				System.out.println("Bye bye...");
 				System.exit(1);
