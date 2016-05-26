@@ -197,7 +197,6 @@ public class FtpClient {
 
 		out.println("PASV");
 		try{
-			//pasvModeData = in.readLine().substring(27);
 			pasvModeData = in.readLine();
 		}catch(IOException ex6){
 			System.out.println(ex6.getMessage());
@@ -205,7 +204,6 @@ public class FtpClient {
 		}
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
-		//pasvModeData = pasvModeData.substring(0, pasvModeData.length() - 1);
 		while(m.find()){
 			temp = temp + m.group(1);
 		}
@@ -220,7 +218,7 @@ public class FtpClient {
 		hexLSB = Integer.toHexString(portLSB);
 
 		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-		
+
 		threadS = new threadSocket(hostIp, hostPort, info);
 		threadS.start();
 
@@ -392,11 +390,35 @@ public class FtpClient {
 				return;
 			}
 
-			/*if (mdownload()){
-				System.out.println("Download success");
-			}else{
-				System.out.println("Download falid");
-			}*/
+			List<RemoteFileInfo> list = parse( list(filename) );
+			if( list.size() > 1 || list.size()==0 || !list.get(0).name.equals(filename) ) {
+				File filepath = file.getParentFile() != null ? file.getParentFile() : new File(".");
+				list = parse( list( filepath.getPath() ) );
+				boolean found = false, downloaded = false;
+				for(RemoteFileInfo entry : list)
+					if( entry.name.equals(filename) ) {
+						found = true;
+						if( mdownload( entry ) ) {
+							downloaded = true;
+						}
+					}
+				if(found && downloaded)
+					System.out.println("Filename \""+filename+"\" download successfull");
+				else if( !found )
+					System.out.println("Unable to find \""+filename+"\"");
+				else if( !downloaded )
+					System.out.println("Failed to download \""+filename+"\"");
+
+			}
+			else if( list.size() == 1 ) {
+				for(RemoteFileInfo entry : list) {
+					if( !mdownload( entry ) ) {
+						System.out.println("Failed to download filename \""+entry.name+"\"");
+						return;
+					}
+					System.out.println("Filename \""+entry.name+"\" download successfull");
+				}
+			}
 
 		} catch(IOException ex) {
 			ex.printStackTrace();
@@ -409,7 +431,67 @@ public class FtpClient {
 	* @param entry can be either a filename or directory
 	*/
 	public boolean mdownload(RemoteFileInfo entry) {
-		return false;
+		if( entry.dir ) {
+			File temp = new File(entry.name);
+			temp.mkdir();
+			cwd( entry.name );
+			List<RemoteFileInfo> list = parse( list(".") );
+			for(RemoteFileInfo listentry : list) {
+
+				mdownload(listentry);
+			}
+			cwd("..");
+			return true;
+		}
+		else {
+			if( download( entry) == 0 ) {
+				System.out.println("Download of file \""+entry.name+"\" failed!");
+				return true;
+			}
+			return false;
+		}
+	}
+
+	class threadDownload extends Thread {
+
+		Socket dataSocket;
+		BufferedReader serverIn;
+		File writeFile;
+		String temp;
+
+		public threadDownload (String hostIp, int hostPort, String fileName) {
+			try {
+				writeFile = new File(fileName);
+				dataSocket = new Socket(hostIp, hostPort);
+				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
+			}catch(UnknownHostException ex){
+
+				System.err.println(ex.getMessage()+ " " + hostIp );
+			}catch(IOException ex2){
+
+				System.err.println(ex2.getMessage()+ " " + hostIp );
+			}
+		}
+
+		public void run() {
+
+			lock.lock();
+			try {
+			    byte []buffer = new byte[2048];
+
+			    FileOutputStream fileOut = new FileOutputStream(writeFile);
+			    int read_len;
+			    while( (read_len = serverIn.read(buffer)) != -1 ) {
+					fileOut.write(buffer, 0, read_len);
+			    }
+			    fileOut.close();
+
+			    } catch( IOException ex ) {
+			    	ex.printStackTrace();
+			    }
+			lock.unlock();
+		}
+
 	}
 
 	/**
@@ -419,6 +501,56 @@ public class FtpClient {
 	* -2: download failure
 	*/
 	public int download(RemoteFileInfo entry) {
+		String pasvModeData;
+		String hostIp, hexMSB, hexLSB;
+		int portMSB, portLSB;
+		int hostPort;
+		String temp = new String();
+
+		try{
+			out.println("TYPE I");
+			if (!in.readLine().startsWith("200")){
+				System.out.println("Error in setting the ");
+			}
+		}catch(IOException ex14){
+			System.out.println(ex14.getMessage());
+			return -2;
+		}
+
+		out.println("PASV");
+		try{
+			pasvModeData = in.readLine();
+		}catch(IOException ex6){
+			System.out.println(ex6.getMessage());
+			return -2;
+		}
+		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
+
+		while(m.find()){
+			temp = temp + m.group(1);
+		}
+		String[] tokens = temp.split(",");
+
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
+
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
+
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+		threadS = new threadSocket(hostIp, hostPort, entry.name);
+		threadS.start();
+
+		//out.println("LIST " + path);
+		try{
+			threadS.join();
+		}catch(InterruptedException ex7){
+			System.out.println(ex7.getMessage());
+			return -2;
+		}
+
 		return 0;
 	}
 
