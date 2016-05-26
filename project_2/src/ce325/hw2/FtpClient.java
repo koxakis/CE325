@@ -164,7 +164,7 @@ public class FtpClient {
 				System.err.println("Don't know about host " + hostIp);
 			}catch(IOException ex2){
 
-				System.err.println("Couldn't get I/O for the connection to " + hostIp);
+				System.err.println(ex2.getMessage()+ " " + hostIp );
 			}
 		}
 
@@ -383,11 +383,11 @@ public class FtpClient {
 				return;
 			}
 
-			if (mdownload( )){
+			/*if (mdownload()){
 				System.out.println("Download success");
 			}else{
 				System.out.println("Download falid");
-			}
+			}*/
 
 		} catch(IOException ex) {
 			ex.printStackTrace();
