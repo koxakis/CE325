@@ -3,6 +3,7 @@ package ce325.hw2;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FtpClient {
@@ -192,16 +193,24 @@ public class FtpClient {
 		StringBuilder info = new StringBuilder();
 		int portMSB, portLSB;
 		int hostPort;
+		String temp = new String();
 
 		out.println("PASV");
 		try{
-			pasvModeData = in.readLine().substring(27);
+			//pasvModeData = in.readLine().substring(27);
+			pasvModeData = in.readLine();
 		}catch(IOException ex6){
 			System.out.println(ex6.getMessage());
 			return "error";
 		}
-		pasvModeData = pasvModeData.substring(0, pasvModeData.length() - 2);
-		String[] tokens = pasvModeData.split(",");
+		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
+
+		//pasvModeData = pasvModeData.substring(0, pasvModeData.length() - 1);
+		while(m.find()){
+			temp = temp + m.group(1);
+		}
+		String[] tokens = temp.split(",");
+
 		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
 
 		portMSB = Integer.parseInt(tokens[4]);
@@ -211,7 +220,7 @@ public class FtpClient {
 		hexLSB = Integer.toHexString(portLSB);
 
 		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-
+		
 		threadS = new threadSocket(hostIp, hostPort, info);
 		threadS.start();
 
@@ -336,9 +345,9 @@ public class FtpClient {
 		String[] tokens = info.split("\\n");
 
 		if (info != null && !info.isEmpty()){
-			for(String strLine : tokens){
+			for (int i=1; i < tokens.length; i++){
 
-				RemoteFileInfo data = new RemoteFileInfo(strLine);
+				RemoteFileInfo data = new RemoteFileInfo(tokens[i]);
 				list.add(data);
 			}
 		}
