@@ -461,7 +461,7 @@ public class FtpClient {
 		BufferedReader serverIn;
 		File writeFile;
 
-		FileOutputStream outToBuffer;
+		FileOutputStream outToFile;
 
 		public threadDownload (String hostIp, int hostPort, String fileName) {
 			try {
@@ -472,7 +472,7 @@ public class FtpClient {
 				//Connect socket with a buffer
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 
-				outToBuffer = new FileOutputStream(writeFile);
+				outToFile = new FileOutputStream(writeFile);
 
 			}catch(UnknownHostException ex){
 
@@ -487,12 +487,12 @@ public class FtpClient {
 
 			lock.lock();
 			try {
-				//byte []buffer = new byte[2048];
+
 				int read_len;
     			while( (read_len = serverIn.read()) != -1 ) {
-        			outToBuffer.write(read_len);
+        			outToFile.write(read_len);
     			}
-    			outToBuffer.close();
+    			outToFile.close();
 
 			    } catch( IOException ex ) {
 			    	ex.printStackTrace();
@@ -551,11 +551,23 @@ public class FtpClient {
 		threadS = new threadDownload(hostIp, hostPort, entry.name);
 		threadS.start();
 
-		//out.println("LIST " + path);
+		out.println("RETR " + entry.name);
+
 		try{
 			threadS.join();
 		}catch(InterruptedException ex7){
 			System.out.println(ex7.getMessage());
+			return -2;
+		}
+
+		try{
+			/*System.out.println(in.readLine());
+			System.out.println(in.readLine());
+			Borat				*/
+			in.readLine();
+			in.readLine();
+		}catch(IOException ex8){
+			System.out.println(ex8.getMessage());
 			return -2;
 		}
 
