@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
+import java.nio.*;
+import java.nio.channels.*;
+import java.nio.channels.Channels.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FtpClient {
@@ -11,9 +14,9 @@ public class FtpClient {
 	BufferedReader reader;
 	PrintWriter out;
 	BufferedReader in;
+
 	File workingDir;
 	Thread threadS;
-
 	ReentrantLock lock = new ReentrantLock();
 
 	static boolean DEBUG = false;
@@ -459,11 +462,18 @@ public class FtpClient {
 		File writeFile;
 		String temp;
 
+		FileOutputStream outToBuffer;
+		ReadableByteChannel rbc;
+
 		public threadDownload (String hostIp, int hostPort, String fileName) {
 			try {
-				writeFile = new File(fileName);
+				writeFile = new File("./"+fileName);
+				writeFile.createNewFile();
+				//Open socket connection
 				dataSocket = new Socket(hostIp, hostPort);
+				//Connect socket with a buffer
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
+
 			}catch(UnknownHostException ex){
 
 				System.err.println(ex.getMessage()+ " " + hostIp );
@@ -477,14 +487,8 @@ public class FtpClient {
 
 			lock.lock();
 			try {
-			    byte []buffer = new byte[2048];
 
-			    FileOutputStream fileOut = new FileOutputStream(writeFile);
-			    int read_len;
-			    while( (read_len = serverIn.read(buffer)) != -1 ) {
-					fileOut.write(buffer, 0, read_len);
-			    }
-			    fileOut.close();
+				outToBuffer.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 
 			    } catch( IOException ex ) {
 			    	ex.printStackTrace();
@@ -540,7 +544,7 @@ public class FtpClient {
 		hexLSB = Integer.toHexString(portLSB);
 
 		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-		threadS = new threadSocket(hostIp, hostPort, entry.name);
+		threadS = new threadDownload(hostIp, hostPort, entry.name);
 		threadS.start();
 
 		//out.println("LIST " + path);
