@@ -401,7 +401,7 @@ public class FtpClient {
 				for(RemoteFileInfo entry : list)
 					if( entry.name.equals(filename) ) {
 						found = true;
-						if( mdownload( entry ) ) {
+						if( mdownload(entry, "./") ) {
 							downloaded = true;
 						}
 					}
@@ -415,7 +415,7 @@ public class FtpClient {
 			}
 			else if( list.size() == 1 ) {
 				for(RemoteFileInfo entry : list) {
-					if( !mdownload( entry ) ) {
+					if( !mdownload(entry, "./") ) {
 						System.out.println("Failed to download filename \""+entry.name+"\"");
 						return;
 					}
@@ -433,22 +433,23 @@ public class FtpClient {
 	* Download multiple files
 	* @param entry can be either a filename or directory
 	*/
-	public boolean mdownload(RemoteFileInfo entry) {
+	public boolean mdownload(RemoteFileInfo entry, String path) {
 		if( entry.dir ) {
-			File temp = new File(entry.name);
+			File temp = new File(path + entry.name);
 			temp.mkdir();
+			path = path + entry.name + "/";
 			cwd( entry.name );
 			List<RemoteFileInfo> list = parse( list(".") );
 			for(RemoteFileInfo listentry : list) {
 
-				mdownload(listentry);
+				mdownload(listentry,path);
 			}
+			path = path.substring(0,path.length() - (entry.name.length() + 1 ) );
 			cwd("..");
 			return true;
 		}
 		else {
-			if( download( entry) == 0 ) {
-				System.out.println("Download of file \""+entry.name+"\" succeded!");
+			if( download(entry, path) == 0 ) {
 				return true;
 			}
 			return false;
@@ -463,9 +464,9 @@ public class FtpClient {
 
 		FileOutputStream outToFile;
 
-		public threadDownload (String hostIp, int hostPort, String fileName) {
+		public threadDownload (String hostIp, int hostPort, String fileName, String path) {
 			try {
-				writeFile = new File("./"+fileName);
+				writeFile = new File(path+fileName);
 				writeFile.createNewFile();
 				//Open socket connection
 				dataSocket = new Socket(hostIp, hostPort);
@@ -508,7 +509,7 @@ public class FtpClient {
 	* -1: File exists and cannot overwritten
 	* -2: download failure
 	*/
-	public int download(RemoteFileInfo entry) {
+	public int download(RemoteFileInfo entry, String path) {
 		String pasvModeData;
 		String hostIp, hexMSB, hexLSB;
 		int portMSB, portLSB;
@@ -548,7 +549,7 @@ public class FtpClient {
 		hexLSB = Integer.toHexString(portLSB);
 
 		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-		threadS = new threadDownload(hostIp, hostPort, entry.name);
+		threadS = new threadDownload(hostIp, hostPort, entry.name, path);
 		threadS.start();
 
 		out.println("RETR " + entry.name);
