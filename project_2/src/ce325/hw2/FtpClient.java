@@ -448,7 +448,7 @@ public class FtpClient {
 		}
 		else {
 			if( download( entry) == 0 ) {
-				System.out.println("Download of file \""+entry.name+"\" failed!");
+				System.out.println("Download of file \""+entry.name+"\" succeded!");
 				return true;
 			}
 			return false;
@@ -460,10 +460,8 @@ public class FtpClient {
 		Socket dataSocket;
 		BufferedReader serverIn;
 		File writeFile;
-		String temp;
 
 		FileOutputStream outToBuffer;
-		ReadableByteChannel rbc;
 
 		public threadDownload (String hostIp, int hostPort, String fileName) {
 			try {
@@ -473,6 +471,8 @@ public class FtpClient {
 				dataSocket = new Socket(hostIp, hostPort);
 				//Connect socket with a buffer
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
+
+				outToBuffer = new FileOutputStream(writeFile);
 
 			}catch(UnknownHostException ex){
 
@@ -487,8 +487,12 @@ public class FtpClient {
 
 			lock.lock();
 			try {
-
-				outToBuffer.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				//byte []buffer = new byte[2048];
+				int read_len;
+    			while( (read_len = serverIn.read()) != -1 ) {
+        			outToBuffer.write(read_len);
+    			}
+    			outToBuffer.close();
 
 			    } catch( IOException ex ) {
 			    	ex.printStackTrace();
