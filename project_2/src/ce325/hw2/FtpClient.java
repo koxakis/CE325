@@ -197,7 +197,8 @@ public class FtpClient {
 		int portMSB, portLSB;
 		int hostPort;
 		String temp = new String();
-		
+
+		lock.lock();
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
@@ -205,6 +206,7 @@ public class FtpClient {
 			System.out.println(ex6.getMessage());
 			return "error";
 		}
+		lock.unlock();
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
 		while(m.find()){
@@ -549,7 +551,7 @@ public class FtpClient {
 			System.out.println(ex14.getMessage());
 			return -2;
 		}
-
+		lock.lock();
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
@@ -557,6 +559,7 @@ public class FtpClient {
 			System.out.println(ex6.getMessage());
 			return -2;
 		}
+		lock.unlock();
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
 		while(m.find()){
