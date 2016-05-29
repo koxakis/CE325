@@ -170,9 +170,9 @@ public class FtpClient {
 
 				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
 				success = false;
-			}catch(Exception ex15){
+			}catch(Exception ex3){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
+				System.err.println(ex3.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
 				success = false;
 			}
 		}
@@ -430,9 +430,9 @@ public class FtpClient {
 
 				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadUpload");
 				success = false;
-			}catch(Exception ex15){
+			}catch(Exception ex3){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadUpload " + hostPort);
+				System.err.println(ex3.getMessage()+ " " + hostIp + " From threadUpload " + hostPort);
 				success = false;
 			}
 		}
@@ -637,7 +637,7 @@ public class FtpClient {
 				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadDownload");
 				success = false;
 			}catch(Exception ex3){
-				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadDownload");
+				System.err.println(ex3.getMessage()+ " " + hostIp + "From threadDownload");
 				success = false;
 			}
 		}
