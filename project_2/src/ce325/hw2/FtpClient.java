@@ -165,10 +165,10 @@ public class FtpClient {
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 			}catch(UnknownHostException ex){
 
-				System.err.println("Don't know about host " + hostIp);
+				System.err.println("Don't know about host " + hostIp + " From threadSocket " + hostPort);
 			}catch(IOException ex2){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp );
+				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
 			}
 		}
 
@@ -197,7 +197,7 @@ public class FtpClient {
 		int portMSB, portLSB;
 		int hostPort;
 		String temp = new String();
-
+		
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
@@ -372,8 +372,32 @@ public class FtpClient {
 	* Upload multiple files
 	* @param f can be either a local filename or local directory
 	*/
-	public void mupload(File f) {
+	public boolean mupload(File f) {
+		if( f.isDirectory() ) {
+			mkdir(f.getName() );
+			//path = path + entry.name + "/";
+			cwd( f.getName() );
+			//List<RemoteFileInfo> list = parse( list(".") );
+			File files[] = f.listFiles();
+			for(File listentry : files) {
 
+				mupload(listentry);
+			}
+			//path = path.substring(0,path.length() - (entry.name.length() + 1 ) );
+			cwd("..");
+			return true;
+		}
+		else {
+			if( upload() ) {
+				return true;
+			}
+			return false;
+		}
+
+	}
+
+	public boolean upload(){
+		return false;
 	}
 
 	public void downloadUI() {
@@ -477,10 +501,10 @@ public class FtpClient {
 
 			}catch(UnknownHostException ex){
 
-				System.err.println(ex.getMessage()+ " " + hostIp );
+				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
 			}catch(IOException ex2){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp );
+				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadSocket");
 			}
 		}
 
