@@ -360,7 +360,11 @@ public class FtpClient {
 			System.out.print("Enter file to upload: ");
 			String filepath = reader.readLine();
 			File file = new File(filepath);
-			mupload(file);
+			if (mupload(file)) {
+				System.out.println("Filename \""+file.getName()+"\" upload successfull");
+			}else{
+				System.out.println("Filename \""+file.getName()+"\" upload failed");
+			}
 		} catch(IOException ex) {
 			ex.printStackTrace();
 			System.exit(-1);
