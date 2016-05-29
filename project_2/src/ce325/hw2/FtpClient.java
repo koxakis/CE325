@@ -79,7 +79,7 @@ public class FtpClient {
 		}catch(UnknownHostException ex){
 			System.err.println("Don't know about host " + inetAddress);
 			return false;
-		}catch(IOException ex2){
+		}catch(IOException ex1){
 			System.err.println("Couldn't get I/O for the connection to " + inetAddress);
 			return false;
 		}
@@ -157,15 +157,17 @@ public class FtpClient {
 
 		public threadSocket (String hostIp, int hostPort, StringBuilder arg_info) {
 			try {
+				//arg_info is used to pass the result to the main thread
 				this.info = arg_info;
+				//Opening the socket as dictaded from PASV
 				dataSocket = new Socket(hostIp, hostPort);
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 			}catch(UnknownHostException ex){
 
-				System.err.println("Don't know about host " + hostIp + " From threadSocket " + hostPort);
-			}catch(IOException ex2){
+				System.err.println(ex.getMessage() + " " + hostIp + " From threadSocket " + hostPort);
+			}catch(IOException ex1){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
+				System.err.println(ex1.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
 			}
 		}
 
@@ -173,14 +175,15 @@ public class FtpClient {
 
 			lock.lock();
 			try{
+				//This while puts the 'ls -l' result to a StringBuilder
 				while(( temp = serverIn.readLine()) != null){
 
 					info.append(temp);
 					info.append("\n");
 				}
 
-			}catch(IOException ex6){
-				System.out.println(ex6.getMessage());
+			}catch(IOException ex){
+				System.out.println(ex.getMessage());
 			}
 			lock.unlock();
 		}
@@ -199,8 +202,8 @@ public class FtpClient {
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
-		}catch(IOException ex6){
-			System.out.println(ex6.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return "error";
 		}
 		lock.unlock();
@@ -227,8 +230,8 @@ public class FtpClient {
 		out.println("LIST " + path);
 		try{
 			threadS.join();
-		}catch(InterruptedException ex7){
-			System.out.println(ex7.getMessage());
+		}catch(InterruptedException ex){
+			System.out.println(ex.getMessage());
 			return "error";
 		}
 		try{
@@ -238,8 +241,8 @@ public class FtpClient {
 			*/
 			in.readLine();
 			in.readLine();
-		}catch(IOException ex8){
-			System.out.println(ex8.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return "error";
 		}
 
@@ -417,9 +420,9 @@ public class FtpClient {
 			}catch(UnknownHostException ex){
 
 				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
-			}catch(IOException ex2){
+			}catch(IOException ex1){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex1.getMessage()+ " " + hostIp + "From threadSocket");
 			}
 		}
 
@@ -458,16 +461,16 @@ public class FtpClient {
 			if (!in.readLine().startsWith("200")){
 				System.out.println("Error in setting the ");
 			}
-		}catch(IOException ex14){
-			System.out.println(ex14.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 		lock.lock();
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
-		}catch(IOException ex6){
-			System.out.println(ex6.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 		lock.unlock();
@@ -494,8 +497,8 @@ public class FtpClient {
 		threadS.start();
 		try{
 			threadS.join();
-		}catch(InterruptedException ex7){
-			System.out.println(ex7.getMessage());
+		}catch(InterruptedException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 
@@ -505,8 +508,8 @@ public class FtpClient {
 			Borat				*/
 			in.readLine();
 			in.readLine();
-		}catch(IOException ex8){
-			System.out.println(ex8.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 
@@ -615,9 +618,9 @@ public class FtpClient {
 			}catch(UnknownHostException ex){
 
 				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
-			}catch(IOException ex2){
+			}catch(IOException ex1){
 
-				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex1.getMessage()+ " " + hostIp + "From threadSocket");
 			}
 		}
 
@@ -658,16 +661,16 @@ public class FtpClient {
 			if (!in.readLine().startsWith("200")){
 				System.out.println("Error in setting the ");
 			}
-		}catch(IOException ex14){
-			System.out.println(ex14.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return -2;
 		}
 		lock.lock();
 		out.println("PASV");
 		try{
 			pasvModeData = in.readLine();
-		}catch(IOException ex6){
-			System.out.println(ex6.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return -2;
 		}
 		lock.unlock();
@@ -694,8 +697,8 @@ public class FtpClient {
 
 		try{
 			threadS.join();
-		}catch(InterruptedException ex7){
-			System.out.println(ex7.getMessage());
+		}catch(InterruptedException ex){
+			System.out.println(ex.getMessage());
 			return -2;
 		}
 
@@ -705,8 +708,8 @@ public class FtpClient {
 			Borat				*/
 			in.readLine();
 			in.readLine();
-		}catch(IOException ex8){
-			System.out.println(ex8.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return -2;
 		}
 
@@ -723,8 +726,8 @@ public class FtpClient {
 				return false;
 			}
 
-		}catch(IOException ex11){
-			System.out.println(ex11.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 
@@ -754,8 +757,8 @@ public class FtpClient {
 				return false;
 			}
 
-		}catch(IOException ex11){
-			System.out.println(ex11.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 	}
@@ -855,8 +858,8 @@ public class FtpClient {
 				return false;
 			}
 
-		}catch(IOException ex10){
-			System.out.println(ex10.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 
@@ -886,8 +889,8 @@ public class FtpClient {
 				return true;
 			}
 
-		}catch(IOException ex5){
-			System.out.println(ex5.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 		return false;
@@ -903,8 +906,8 @@ public class FtpClient {
 		out.println("PWD");
 		try{
 			return in.readLine().substring(4);
-		}catch(IOException ex4){
-			return("Directory failed to be read " + ex4.getMessage());
+		}catch(IOException ex){
+			return("Directory failed to be read " + ex.getMessage());
 		}
 
 	}
@@ -940,8 +943,8 @@ public class FtpClient {
 				return false;
 			}
 
-		}catch(IOException ex9){
-			System.out.println(ex9.getMessage());
+		}catch(IOException ex){
+			System.out.println(ex.getMessage());
 			return false;
 		}
 
