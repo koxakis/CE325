@@ -4,9 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.regex.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.channels.Channels.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FtpClient {
@@ -390,7 +387,7 @@ public class FtpClient {
 			return true;
 		}
 		else {
-			if( upload() ) {
+			if( upload(f) ) {
 				return true;
 			}
 			return false;
@@ -398,8 +395,118 @@ public class FtpClient {
 
 	}
 
-	public boolean upload(){
-		return false;
+	class threadUpload extends Thread {
+
+		Socket dataSocket;
+		OutputStream clientOut;
+
+		FileInputStream outToServer;
+
+		public threadUpload (String hostIp, int hostPort, File fileName) {
+			try {
+				outToServer = new FileInputStream(fileName);
+				//Open socket connection
+				dataSocket = new Socket(hostIp, hostPort);
+				//Connect socket with a buffer
+				clientOut = dataSocket.getOutputStream();
+
+			}catch(UnknownHostException ex){
+
+				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
+			}catch(IOException ex2){
+
+				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadSocket");
+			}
+		}
+
+		public void run() {
+
+			lock.lock();
+			try {
+
+				int read_len;
+    			while( (read_len = outToServer.read()) != -1 ) {
+
+        			clientOut.write(read_len);
+					clientOut.flush();
+    			}
+
+				outToServer.close();
+				dataSocket.close();
+
+			}catch( IOException ex ) {
+			    ex.printStackTrace();
+			}
+			lock.unlock();
+		}
+
+	}
+
+	public boolean upload(File f){
+		String pasvModeData;
+		String hostIp, hexMSB, hexLSB;
+		int portMSB, portLSB;
+		int hostPort;
+		String temp = new String();
+
+		try{
+			out.println("TYPE I");
+			if (!in.readLine().startsWith("200")){
+				System.out.println("Error in setting the ");
+			}
+		}catch(IOException ex14){
+			System.out.println(ex14.getMessage());
+			return false;
+		}
+		lock.lock();
+		out.println("PASV");
+		try{
+			pasvModeData = in.readLine();
+		}catch(IOException ex6){
+			System.out.println(ex6.getMessage());
+			return false;
+		}
+		lock.unlock();
+		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
+
+		while(m.find()){
+			temp = temp + m.group(1);
+		}
+		String[] tokens = temp.split(",");
+
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
+
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
+
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+		threadS = new threadUpload(hostIp, hostPort, f);
+
+
+		out.println("STOR " + f.getName());
+		threadS.start();
+		try{
+			threadS.join();
+		}catch(InterruptedException ex7){
+			System.out.println(ex7.getMessage());
+			return false;
+		}
+
+		try{
+			/*System.out.println(in.readLine());
+			System.out.println(in.readLine());
+			Borat				*/
+			in.readLine();
+			in.readLine();
+		}catch(IOException ex8){
+			System.out.println(ex8.getMessage());
+			return false;
+		}
+
+		return true;
 	}
 
 	public void downloadUI() {
