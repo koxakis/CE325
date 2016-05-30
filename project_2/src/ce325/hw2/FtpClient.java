@@ -77,10 +77,10 @@ public class FtpClient {
 
 			return true;
 		}catch(UnknownHostException ex){
-			System.err.println("Don't know about host " + inetAddress);
+			System.err.println("Don't know about host " + inetAddress + " Port: " + port);
 			return false;
 		}catch(IOException ex1){
-			System.err.println("Couldn't get I/O for the connection to " + inetAddress);
+			System.err.println("Couldn't get connection to " + inetAddress + " Port: " + port);
 			return false;
 		}
 
@@ -164,10 +164,12 @@ public class FtpClient {
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 			}catch(UnknownHostException ex){
 
-				System.err.println(ex.getMessage() + " " + hostIp + " From threadSocket " + hostPort);
+				System.err.println(ex.getMessage() + " " + hostIp + " From threadSocket on port " + hostPort);
+				System.exit(0);
 			}catch(IOException ex1){
 
-				System.err.println(ex1.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
+				System.err.println(ex1.getMessage()+ " " + hostIp + " From threadSocket on port " + hostPort);
+				System.exit(0);
 			}
 		}
 
@@ -198,6 +200,7 @@ public class FtpClient {
 		int hostPort;
 		String temp = new String();
 
+		//This lock is used to safeguard in case of another message disrupts the PASV message
 		lock.lock();
 		out.println("PASV");
 		try{
@@ -207,6 +210,9 @@ public class FtpClient {
 			return "error";
 		}
 		lock.unlock();
+
+		/*Parsing of the data coming from the ftp server is being prossesed with REGEXP to determine the
+			data inside the parentheses (IP1,IP2,IP3,IP4,PortMSB,portLSB) */
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
 		while(m.find()){
@@ -229,12 +235,14 @@ public class FtpClient {
 
 		out.println("LIST " + path);
 		try{
+			//Main thread waits child thread to finish excecuting
 			threadS.join();
 		}catch(InterruptedException ex){
 			System.out.println(ex.getMessage());
 			return "error";
 		}
 		try{
+			//This readLine() is used to clear the buffer from server messages
 			in.readLine();
 			in.readLine();
 		}catch(IOException ex){
@@ -259,18 +267,24 @@ public class FtpClient {
 		boolean ox = false;  // other execute permission
 		long size;           // file size
 		String name;
-		String parentDir;
 
 		public RemoteFileInfo(String line) {
 
+			/*This is the standard length of the ls -l command in witch we find the begining of the
+				file name */
 			int i = 8;
 
+			//We take one line and split it between the spaces creating an array of tokens
 			String[] tokens = line.split("\\s+");
 
+			//The first token contains the file's/directory's permissions
 			this.permissions(tokens[0]);
 
+			//The fifth token contains the filesize
 			size = Long.parseLong(tokens[4]);
 
+			/*The file/dir name may contain spaces so we append the rest of the line in order
+				to get the full file/dir name */
 			name = tokens[i];
 			while(i + 1 < tokens.length) {
 				i++;
@@ -338,6 +352,8 @@ public class FtpClient {
 		}
 	}
 
+	/*Splits the received result of the ls -l in lines and creates a RemoteFileInfo object for each line
+		and inserts it in a list */
 	public List<RemoteFileInfo> parse(String info) {
 
 		List<RemoteFileInfo> list = new LinkedList<RemoteFileInfo>();
@@ -359,10 +375,15 @@ public class FtpClient {
 			System.out.print("Enter file to upload: ");
 			String filepath = reader.readLine();
 			File file = new File(filepath);
-			if (mupload(file)) {
-				System.out.println("Filename \""+file.getName()+"\" upload successfull");
+			if(file.exists()){
+
+				if (mupload(file)) {
+					System.out.println("Filename \""+file.getName()+"\" upload successfull");
+				}else{
+					System.out.println("Filename \""+file.getName()+"\" upload failed");
+				}
 			}else{
-				System.out.println("Filename \""+file.getName()+"\" upload failed");
+				System.out.println("Filename or directory \""+file.getName()+"\" not found");
 			}
 		} catch(IOException ex) {
 			ex.printStackTrace();
@@ -377,15 +398,12 @@ public class FtpClient {
 	public boolean mupload(File f) {
 		if( f.isDirectory() ) {
 			mkdir(f.getName() );
-			//path = path + entry.name + "/";
 			cwd( f.getName() );
-			//List<RemoteFileInfo> list = parse( list(".") );
 			File files[] = f.listFiles();
 			for(File listentry : files) {
 
 				mupload(listentry);
 			}
-			//path = path.substring(0,path.length() - (entry.name.length() + 1 ) );
 			cwd("..");
 			return true;
 		}
@@ -407,6 +425,7 @@ public class FtpClient {
 
 		public threadUpload (String hostIp, int hostPort, File fileName) {
 			try {
+				//Open a stream from inputed file
 				outToServer = new FileInputStream(fileName);
 				//Open socket connection
 				dataSocket = new Socket(hostIp, hostPort);
@@ -415,10 +434,12 @@ public class FtpClient {
 
 			}catch(UnknownHostException ex){
 
-				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex.getMessage() + " " + hostIp + " From threadUpload on port " + hostPort);
+				System.exit(0);
 			}catch(IOException ex1){
 
-				System.err.println(ex1.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex1.getMessage() + " " + hostIp + " From threadUpload on port " + hostPort);
+				System.exit(0);
 			}
 		}
 
@@ -472,7 +493,7 @@ public class FtpClient {
 		lock.unlock();
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
-		while(m.find()){ 
+		while(m.find()){
 			temp = temp + m.group(1);
 		}
 		String[] tokens = temp.split(",");
@@ -599,21 +620,24 @@ public class FtpClient {
 
 		public threadDownload (String hostIp, int hostPort, String fileName, String path) {
 			try {
+				//Open a file to write to
 				writeFile = new File(path+fileName);
 				writeFile.createNewFile();
 				//Open socket connection
 				dataSocket = new Socket(hostIp, hostPort);
 				//Connect socket with a buffer
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
-
+				//Connect file with stream
 				outToFile = new FileOutputStream(writeFile);
 
 			}catch(UnknownHostException ex){
 
-				System.err.println(ex.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex.getMessage() + " " + hostIp + " From threadDownload on port " + hostPort);
+				System.exit(0);
 			}catch(IOException ex1){
 
-				System.err.println(ex1.getMessage()+ " " + hostIp + "From threadSocket");
+				System.err.println(ex1.getMessage() + " " + hostIp + " From threadDownload on port " + hostPort);
+				System.exit(0);
 			}
 		}
 
@@ -852,7 +876,6 @@ public class FtpClient {
 			System.out.println(ex.getMessage());
 			return false;
 		}
-
 	}
 
 
@@ -941,7 +964,7 @@ public class FtpClient {
 	}
 
 	public void helpUI() {
-		System.out.println("OPTIONS:\n\tRNM\tLOGIN\tQUIT\tLIST\tUPLOAD\tDOWNLOAD\n\tMKD\tRMD\tCWD\tPWD\tDEL");
+		System.out.println("OPTIONS:\n\tCONNECT\tLOGIN\tQUIT\tLIST\tUPLOAD\tDOWNLOAD\n\tRNM\tMKD\tRMD\tCWD\tPWD\tDEL");
 	}
 
 	public void checkInput(String command) {
@@ -955,9 +978,11 @@ public class FtpClient {
 			case "LOGIN" :
 				loginUI();
 			break;
+			case "UP":
 			case "UPLOAD" :
 				uploadUI();
 			break;
+			case "DOWN":
 			case "DOWNLOAD" :
 				downloadUI();
 			break;
@@ -969,6 +994,7 @@ public class FtpClient {
 				pwdUI();
 			break;
 			case "LIST" :
+			case "LS" :
 				listUI();
 			break;
 			case "MKD" :
