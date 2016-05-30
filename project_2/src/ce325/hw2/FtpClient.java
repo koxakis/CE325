@@ -11,7 +11,6 @@ public class FtpClient {
 	BufferedReader reader;
 	PrintWriter out;
 	BufferedReader in;
-	boolean success;
 
 	File workingDir;
 	Thread threadS;
@@ -163,28 +162,14 @@ public class FtpClient {
 				//Opening the socket as dictaded from PASV
 				dataSocket = new Socket(hostIp, hostPort);
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
-				success = true;
 			}catch(UnknownHostException ex){
 
-<<<<<<< HEAD
-				System.err.println("Don't know about host " + hostIp + " From threadSocket " + hostPort);
-				success = false;
-			}catch(IOException ex2){
-
-				System.err.println(ex2.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
-				success = false;
-			}catch(Exception ex3){
-
-				System.err.println(ex3.getMessage()+ " " + hostIp + " From threadSocket " + hostPort);
-				success = false;
-=======
 				System.err.println(ex.getMessage() + " " + hostIp + " From threadSocket on port " + hostPort);
 				System.exit(0);
 			}catch(IOException ex1){
 
 				System.err.println(ex1.getMessage()+ " " + hostIp + " From threadSocket on port " + hostPort);
 				System.exit(0);
->>>>>>> master
 			}
 		}
 
@@ -215,19 +200,6 @@ public class FtpClient {
 		int hostPort;
 		String temp = new String();
 
-<<<<<<< HEAD
-		do{
-			lock.lock();
-			out.println("PASV");
-			try{
-				pasvModeData = in.readLine();
-			}catch(IOException ex6){
-				System.out.println(ex6.getMessage());
-				return "error";
-			}
-			lock.unlock();
-			Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
-=======
 		//This lock is used to safeguard in case of another message disrupts the PASV message
 		lock.lock();
 		out.println("PASV");
@@ -242,26 +214,23 @@ public class FtpClient {
 		/*Parsing of the data coming from the ftp server is being prossesed with REGEXP to determine the
 			data inside the parentheses (IP1,IP2,IP3,IP4,PortMSB,portLSB) */
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
->>>>>>> master
 
-			while(m.find()){
-				temp = temp + m.group(1);
-			}
-			String[] tokens = temp.split(",");
+		while(m.find()){
+			temp = temp + m.group(1);
+		}
+		String[] tokens = temp.split(",");
 
-			hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
 
-			portMSB = Integer.parseInt(tokens[4]);
-			portLSB = Integer.parseInt(tokens[5]);
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
 
-			hexMSB = Integer.toHexString(portMSB);
-			hexLSB = Integer.toHexString(portLSB);
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
 
-			hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
 
-			threadS = new threadSocket(hostIp, hostPort, info);
-		}while(!success);
-
+		threadS = new threadSocket(hostIp, hostPort, info);
 		threadS.start();
 
 		out.println("LIST " + path);
@@ -463,28 +432,14 @@ public class FtpClient {
 				//Connect socket with a buffer
 				clientOut = dataSocket.getOutputStream();
 
-				success = true;
 			}catch(UnknownHostException ex){
 
-<<<<<<< HEAD
-				System.err.println(ex.getMessage()+ " " + hostIp + "From threadUpload");
-				success = false;
-			}catch(IOException ex2){
-
-				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadUpload");
-				success = false;
-			}catch(Exception ex3){
-
-				System.err.println(ex3.getMessage()+ " " + hostIp + " From threadUpload " + hostPort);
-				success = false;
-=======
 				System.err.println(ex.getMessage() + " " + hostIp + " From threadUpload on port " + hostPort);
 				System.exit(0);
 			}catch(IOException ex1){
 
 				System.err.println(ex1.getMessage() + " " + hostIp + " From threadUpload on port " + hostPort);
 				System.exit(0);
->>>>>>> master
 			}
 		}
 
@@ -527,19 +482,6 @@ public class FtpClient {
 			System.out.println(ex.getMessage());
 			return false;
 		}
-<<<<<<< HEAD
-		do{
-			lock.lock();
-			out.println("PASV");
-			try{
-				pasvModeData = in.readLine();
-			}catch(IOException ex6){
-				System.out.println(ex6.getMessage());
-				return false;
-			}
-			lock.unlock();
-			Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
-=======
 		lock.lock();
 		out.println("PASV");
 		try{
@@ -555,24 +497,18 @@ public class FtpClient {
 			temp = temp + m.group(1);
 		}
 		String[] tokens = temp.split(",");
->>>>>>> master
 
-			while(m.find()){
-				temp = temp + m.group(1);
-			}
-			String[] tokens = temp.split(",");
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
 
-			hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
 
-			portMSB = Integer.parseInt(tokens[4]);
-			portLSB = Integer.parseInt(tokens[5]);
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
 
-			hexMSB = Integer.toHexString(portMSB);
-			hexLSB = Integer.toHexString(portLSB);
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+		threadS = new threadUpload(hostIp, hostPort, f);
 
-			hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-			threadS = new threadUpload(hostIp, hostPort, f);
-		}while(!success);
 
 		out.println("STOR " + f.getName());
 		threadS.start();
@@ -693,28 +629,15 @@ public class FtpClient {
 				serverIn = new BufferedReader( new InputStreamReader(dataSocket.getInputStream() ));
 				//Connect file with stream
 				outToFile = new FileOutputStream(writeFile);
-				success = true;
 
 			}catch(UnknownHostException ex){
 
-<<<<<<< HEAD
-				System.err.println(ex.getMessage()+ " " + hostIp + "From threadDownload");
-				success = false;
-			}catch(IOException ex2){
-
-				System.err.println(ex2.getMessage()+ " " + hostIp + "From threadDownload");
-				success = false;
-			}catch(Exception ex3){
-				System.err.println(ex3.getMessage()+ " " + hostIp + "From threadDownload");
-				success = false;
-=======
 				System.err.println(ex.getMessage() + " " + hostIp + " From threadDownload on port " + hostPort);
 				System.exit(0);
 			}catch(IOException ex1){
 
 				System.err.println(ex1.getMessage() + " " + hostIp + " From threadDownload on port " + hostPort);
 				System.exit(0);
->>>>>>> master
 			}
 		}
 
@@ -759,19 +682,6 @@ public class FtpClient {
 			System.out.println(ex.getMessage());
 			return -2;
 		}
-<<<<<<< HEAD
-		do{
-			lock.lock();
-			out.println("PASV");
-			try{
-				pasvModeData = in.readLine();
-			}catch(IOException ex6){
-				System.out.println(ex6.getMessage());
-				return -2;
-			}
-			lock.unlock();
-			Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
-=======
 		lock.lock();
 		out.println("PASV");
 		try{
@@ -782,24 +692,22 @@ public class FtpClient {
 		}
 		lock.unlock();
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
->>>>>>> master
 
-			while(m.find()){
-				temp = temp + m.group(1);
-			}
-			String[] tokens = temp.split(",");
+		while(m.find()){
+			temp = temp + m.group(1);
+		}
+		String[] tokens = temp.split(",");
 
-			hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
+		hostIp = tokens[0] + "." + tokens[1] + "." + tokens[2] + "." + tokens[3];
 
-			portMSB = Integer.parseInt(tokens[4]);
-			portLSB = Integer.parseInt(tokens[5]);
+		portMSB = Integer.parseInt(tokens[4]);
+		portLSB = Integer.parseInt(tokens[5]);
 
-			hexMSB = Integer.toHexString(portMSB);
-			hexLSB = Integer.toHexString(portLSB);
+		hexMSB = Integer.toHexString(portMSB);
+		hexLSB = Integer.toHexString(portLSB);
 
-			hostPort = Integer.decode("0x" + hexMSB + hexLSB);
-			threadS = new threadDownload(hostIp, hostPort, entry.name, path);
-		}while(!success);
+		hostPort = Integer.decode("0x" + hexMSB + hexLSB);
+		threadS = new threadDownload(hostIp, hostPort, entry.name, path);
 		threadS.start();
 
 		out.println("RETR " + entry.name);
