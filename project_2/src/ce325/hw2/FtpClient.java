@@ -235,10 +235,6 @@ public class FtpClient {
 			return "error";
 		}
 		try{
-			/*System.out.println(in.readLine());
-			System.out.println(in.readLine());
-			Borat
-			*/
 			in.readLine();
 			in.readLine();
 		}catch(IOException ex){
@@ -476,7 +472,7 @@ public class FtpClient {
 		lock.unlock();
 		Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(pasvModeData);
 
-		while(m.find()){
+		while(m.find()){ 
 			temp = temp + m.group(1);
 		}
 		String[] tokens = temp.split(",");
@@ -503,9 +499,6 @@ public class FtpClient {
 		}
 
 		try{
-			/*System.out.println(in.readLine());
-			System.out.println(in.readLine());
-			Borat				*/
 			in.readLine();
 			in.readLine();
 		}catch(IOException ex){
@@ -703,9 +696,6 @@ public class FtpClient {
 		}
 
 		try{
-			/*System.out.println(in.readLine());
-			System.out.println(in.readLine());
-			Borat				*/
 			in.readLine();
 			in.readLine();
 		}catch(IOException ex){
